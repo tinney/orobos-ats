@@ -1,0 +1,57 @@
+<%= form_with(model: [:admin, user], class: "space-y-6", data: { controller: "form-submit", action: "submit->form-submit#disable" }) do |f| %>
+  <% if user.errors.any? %>
+    <div class="p-4 bg-red-50 border border-red-200 rounded-md">
+      <h3 class="text-sm font-medium text-red-800">
+        <%= pluralize(user.errors.count, "error") %> prevented this user from being saved:
+      </h3>
+      <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= f.label :first_name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :first_name, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", required: true, placeholder: "Jane" %>
+      </div>
+
+      <div>
+        <%= f.label :last_name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :last_name, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", required: true, placeholder: "Smith" %>
+      </div>
+    </div>
+
+    <div>
+      <%= f.label :email, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.email_field :email, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", required: true, placeholder: "jane@example.com" %>
+      <p class="mt-1 text-xs text-gray-400">Must be unique across the entire platform.</p>
+    </div>
+
+    <% if user.new_record? %>
+      <div>
+        <%= f.label :role, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.select :role, User::ROLES.map { |r| [r.titleize, r] }, {}, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+        <div class="mt-2 space-y-1">
+          <p class="text-xs text-gray-400">
+            <span class="font-medium text-purple-600">★ Admin</span> — Full access: manage team, roles, and all settings
+          </p>
+          <p class="text-xs text-gray-400">
+            <span class="font-medium text-blue-600">◆ Hiring Manager</span> — Manage roles, candidates, and view all feedback
+          </p>
+          <p class="text-xs text-gray-400">
+            <span class="font-medium text-gray-600">● Interviewer</span> — Submit scorecards and view assigned interviews only
+          </p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex items-center space-x-4">
+    <%= f.submit(user.new_record? ? "Add Team Member" : "Save Changes", class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer", data: { form_submit_target: "button" }) %>
+    <%= link_to "Cancel", admin_users_path, class: "text-sm text-gray-600 hover:text-gray-800" %>
+  </div>
+<% end %>

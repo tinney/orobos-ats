@@ -1,0 +1,205 @@
+<%# Renders the interview panel assignment and scheduling UI for a single phase.
+    Panel assignment (add/remove interviewers) is restricted to hiring managers+.
+    Time slot editing is available to any assigned panel member or hiring managers+.
+
+    Locals:
+      - application: ApplicationSubmission
+      - phase: InterviewPhase
+      - interview: Interview (or nil if no interview exists yet)
+      - available_users: collection of User records eligible to be assigned
+%>
+<%
+  interview ||= nil
+  participants = interview&.interview_participants&.includes(:user) || []
+  assigned_ids = participants.map { |p| p.user_id }
+  can_manage_panel = current_user.at_least_hiring_manager?
+  is_panel_member = interview&.panel_member?(current_user) || false
+  can_edit_time = can_manage_panel || is_panel_member
+  assign_url = assign_admin_application_interview_phase_interview_path(
+    application_id: application.id,
+    interview_phase_id: phase.id
+  )
+%>
+
+<div class="border border-gray-200 rounded-lg overflow-hidden"
+     data-controller="panel-assignment"
+     data-panel-assignment-assign-url-value="<%= assign_url %>"
+     data-panel-assignment-assigned-value="<%= assigned_ids.to_json %>">
+
+  <%# Phase header %>
+  <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+        <%= phase.position + 1 %>
+      </span>
+      <h4 class="text-sm font-medium text-gray-900"><%= phase.name %></h4>
+      <% if phase.phase_owner.present? %>
+        <span class="text-xs text-gray-500">(Owner: <%= phase.phase_owner.full_name %>)</span>
+      <% end %>
+    </div>
+
+    <% if interview&.complete? %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        Complete
+      </span>
+    <% elsif interview&.cancelled? %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        Cancelled
+      </span>
+    <% elsif interview&.scheduled? %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        Scheduled
+      </span>
+    <% elsif interview.present? %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        Unscheduled
+      </span>
+    <% else %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        No Interview
+      </span>
+    <% end %>
+  </div>
+
+  <div class="px-4 py-3">
+    <%# Panel members list %>
+    <div class="mb-3">
+      <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Panel Members</h5>
+
+      <%# Empty state %>
+      <p class="text-sm text-gray-400 italic <%= 'hidden' if participants.any? %>"
+         data-panel-assignment-target="emptyState">
+        No interviewers assigned yet.
+      </p>
+
+      <%# Assigned panel members %>
+      <div class="space-y-2 <%= 'hidden' if participants.empty? %>"
+           data-panel-assignment-target="panel">
+        <% participants.each do |participant| %>
+          <div class="flex items-center justify-between py-1.5 px-3 bg-gray-50 rounded-md">
+            <div class="flex items-center space-x-2">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-500 text-white text-xs font-medium">
+                <%= participant.user.first_name[0] %><%= participant.user.last_name[0] %>
+              </span>
+              <div>
+                <span class="text-sm font-medium text-gray-900">
+                  <%= participant.user.full_name %>
+                  <% if participant.user_id == current_user.id %>
+                    <span class="text-xs text-indigo-600 font-medium">(you)</span>
+                  <% end %>
+                </span>
+                <span class="text-xs text-gray-500 ml-1">(<%= participant.user.role.humanize %>)</span>
+              </div>
+            </div>
+
+            <%# Remove button — only visible to hiring managers+ %>
+            <% if can_manage_panel %>
+              <%= button_to remove_participant_admin_application_interview_phase_interview_path(
+                    application_id: application.id,
+                    interview_phase_id: phase.id
+                  ),
+                  method: :delete,
+                  params: { user_id: participant.user_id },
+                  class: "text-gray-400 hover:text-red-600 p-1",
+                  title: "Remove #{participant.user.full_name}",
+                  data: { confirm: "Remove #{participant.user.full_name} from this interview panel?" },
+                  form: { class: "inline" } do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Add interviewer form — only visible to hiring managers+ %>
+    <% if can_manage_panel %>
+      <div class="border-t border-gray-100 pt-3">
+        <%= form_with url: assign_url, method: :post, class: "flex items-center space-x-2" do |f| %>
+          <%= f.select :user_id,
+                options_from_collection_for_select(available_users, :id, :full_name),
+                { include_blank: "Select interviewer\u2026" },
+                class: "flex-1 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 py-1.5",
+                data: { panel_assignment_target: "userSelect" } %>
+          <%= f.submit "Add to Panel",
+                class: "inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+                data: { panel_assignment_target: "assignButton", action: "click->panel-assignment#validateSelection" } %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Time slot picker — visible when interview exists; editable by panel members or HM+ %>
+    <% if interview.present? && can_edit_time %>
+      <div class="border-t border-gray-100 pt-3 mt-3"
+           data-controller="time-slot-picker"
+           data-time-slot-picker-current-value="<%= interview.scheduled_at&.strftime('%Y-%m-%dT%H:%M') %>">
+
+        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Interview Time</h5>
+
+        <%# Current scheduled time display %>
+        <div data-time-slot-picker-target="display">
+          <% if interview.scheduled? %>
+            <p class="text-sm text-gray-900">
+              <span class="font-medium"><%= interview.scheduled_at.strftime("%A, %B %d, %Y") %></span>
+              at
+              <span class="font-medium"><%= interview.scheduled_at.strftime("%I:%M %p") %></span>
+            </p>
+          <% else %>
+            <p class="text-sm text-gray-400 italic">No time scheduled yet.</p>
+          <% end %>
+        </div>
+
+        <%# Schedule/reschedule form — shared slot editable from any panel member's perspective %>
+        <% if interview.unscheduled? || interview.scheduled? %>
+          <%= form_with url: schedule_admin_application_interview_phase_interview_path(
+                application_id: application.id,
+                interview_phase_id: phase.id
+              ),
+              method: :patch,
+              class: "hidden mt-2",
+              data: { time_slot_picker_target: "form" } do |f| %>
+            <div class="flex items-center space-x-2">
+              <%= f.datetime_local_field :scheduled_at,
+                    value: interview.scheduled_at&.strftime('%Y-%m-%dT%H:%M'),
+                    class: "text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 py-1.5",
+                    required: true,
+                    data: { time_slot_picker_target: "input" } %>
+              <%= f.submit "Save Time",
+                    class: "inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 cursor-pointer",
+                    data: { action: "click->time-slot-picker#validate" } %>
+              <button type="button"
+                      class="text-sm text-gray-500 hover:text-gray-700 px-2 py-1.5"
+                      data-action="click->time-slot-picker#cancel">
+                Cancel
+              </button>
+            </div>
+          <% end %>
+
+          <%# Toggle button %>
+          <button type="button"
+                  class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  data-time-slot-picker-target="toggleButton"
+                  data-action="click->time-slot-picker#toggle">
+            <%= interview.scheduled? ? "Change Time" : "Set Time" %>
+          </button>
+        <% end %>
+      </div>
+    <% elsif interview.present? %>
+      <%# Read-only time display for non-panel users who aren't HMs %>
+      <div class="border-t border-gray-100 pt-3 mt-3">
+        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Interview Time</h5>
+        <% if interview.scheduled? %>
+          <p class="text-sm text-gray-900">
+            <span class="font-medium"><%= interview.scheduled_at.strftime("%A, %B %d, %Y") %></span>
+            at
+            <span class="font-medium"><%= interview.scheduled_at.strftime("%I:%M %p") %></span>
+          </p>
+        <% else %>
+          <p class="text-sm text-gray-400 italic">No time scheduled yet.</p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

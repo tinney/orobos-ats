@@ -1,0 +1,62 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+      <%= link_to "← Back", admin_application_path(@application), class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+    </div>
+
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit Offer</h1>
+
+    <div class="bg-white rounded-lg border border-gray-200 px-6 py-6">
+      <%= form_with model: @offer, url: admin_application_offer_path(@application, @offer), method: :patch, local: true, class: "space-y-4" do |f| %>
+        <% if @offer.errors.any? %>
+          <div class="rounded-md bg-red-50 p-4">
+            <ul class="list-disc list-inside text-sm text-red-800">
+              <% @offer.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :salary, "Salary", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.number_field :salary, step: "0.01", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+          </div>
+          <div>
+            <%= f.label :salary_currency, "Currency", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :salary_currency, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+          </div>
+        </div>
+        <div>
+          <%= f.label :start_date, "Start Date", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.date_field :start_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+        </div>
+        <div>
+          <%= f.label :status, "Status", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.select :status, Offer::STATUSES.map { |s| [s.titleize, s] }, {},
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+        </div>
+        <div>
+          <%= f.label :notes, "Notes", class: "block text-sm font-medium text-gray-700" %>
+          <%= f.text_area :notes, rows: 3, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+        </div>
+
+        <% if @offer.offer_revisions.any? %>
+          <div class="mt-4">
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Revision History</h3>
+            <div class="space-y-2">
+              <% @offer.offer_revisions.order(revision_number: :desc).each do |rev| %>
+                <div class="text-xs text-gray-500 border-l-2 border-gray-200 pl-3 py-1">
+                  Rev. <%= rev.revision_number %>: <%= number_to_currency(rev.salary) if rev.salary %> · <%= rev.status&.titleize %> · <%= rev.created_at.strftime("%b %d, %Y") %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <%= f.submit "Update Offer", class: "inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<h2>Sign in to your account</h2>
+
+<p>Hi <%= @user.first_name %>,</p>
+
+<p>Click the link below to sign in:</p>
+
+<p><a href="<%= @magic_link_url %>">Sign in now</a></p>
+
+<p>This link will expire in <%= @expiry_minutes %> minutes and can only be used once.</p>
+
+<p>If you didn't request this link, you can safely ignore this email.</p>

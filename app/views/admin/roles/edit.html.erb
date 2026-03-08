@@ -1,0 +1,14 @@
+<div class="max-w-3xl">
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Edit Role</h1>
+      <p class="mt-1 text-sm text-gray-500">Update the details for "<%= @role.title %>".</p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <%= render "status_badge", role: @role %>
+      <%= render "transition_buttons", role: @role %>
+    </div>
+  </div>
+
+  <%= render "form", role: @role %>
+</div>

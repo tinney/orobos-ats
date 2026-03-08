@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <title><%= content_for(:title) || "Ouroboros — Modern Job Application Tracking" %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ouroboros is a modern, multi-tenant job application tracking system. Streamline your hiring pipeline with structured interviews, blind scorecards, and team collaboration.">
+  <meta name="application-name" content="Ouroboros">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag :app %>
+  <%= javascript_importmap_tags %>
+</head>
+<body class="h-full bg-white">
+  <%= yield %>
+</body>
+</html>

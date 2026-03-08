@@ -1,0 +1,62 @@
+<h2 class="text-xl font-semibold text-gray-900 mb-6">Create your account</h2>
+
+<%= form_with url: signup_path, scope: :signup, method: :post, local: true, class: "space-y-6" do |f| %>
+  <div>
+    <%= f.label :company_name, "Company Name", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :company_name,
+        value: @form_data&.dig(:company_name),
+        required: true,
+        class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+        placeholder: "Acme Corp" %>
+  </div>
+
+  <div>
+    <%= f.label :subdomain, "Subdomain", class: "block text-sm font-medium text-gray-700" %>
+    <div class="mt-1 flex rounded-md shadow-sm">
+      <%= f.text_field :subdomain,
+          value: @form_data&.dig(:subdomain),
+          required: true,
+          class: "block w-full rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+          placeholder: "acme" %>
+      <span class="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+        .ouroboros.app
+      </span>
+    </div>
+    <p class="mt-1 text-xs text-gray-500">Lowercase letters, numbers, and hyphens only. Min 3 characters.</p>
+  </div>
+
+  <hr class="border-gray-200">
+
+  <h3 class="text-lg font-medium text-gray-900">Admin Account</h3>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :admin_first_name, "First Name", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :admin_first_name,
+          value: @form_data&.dig(:admin_first_name),
+          required: true,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+    </div>
+
+    <div>
+      <%= f.label :admin_last_name, "Last Name", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :admin_last_name,
+          value: @form_data&.dig(:admin_last_name),
+          required: true,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :admin_email, "Email Address", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.email_field :admin_email,
+        value: @form_data&.dig(:admin_email),
+        required: true,
+        class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+        placeholder: "admin@acme.com" %>
+  </div>
+
+  <div>
+    <%= f.submit "Create Account", class: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer" %>
+  </div>
+<% end %>

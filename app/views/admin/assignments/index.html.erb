@@ -1,0 +1,160 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="sm:flex sm:items-center sm:justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Assignments</h1>
+    <div class="mt-2 sm:mt-0 text-sm text-gray-500">
+      <%= pluralize(@interviews.size, "interview assignment") %>
+    </div>
+  </div>
+
+  <%# Filters %>
+  <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <%= form_tag admin_assignments_path, method: :get, class: "flex flex-wrap gap-4 items-end" do %>
+      <div>
+        <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+        <select name="status" id="status" class="block w-40 rounded-md border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <option value="">All Statuses</option>
+          <% @statuses.each do |s| %>
+            <option value="<%= s %>" <%= "selected" if @current_filters[:status] == s %>><%= s.titleize %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div>
+        <label for="role_id" class="block text-xs font-medium text-gray-700 mb-1">Role</label>
+        <select name="role_id" id="role_id" class="block w-48 rounded-md border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <option value="">All Roles</option>
+          <% @roles.each do |role| %>
+            <option value="<%= role.id %>" <%= "selected" if @current_filters[:role_id] == role.id.to_s %>><%= role.title %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <% if current_user_role_at_least?(:hiring_manager) %>
+        <div>
+          <label for="interviewer_id" class="block text-xs font-medium text-gray-700 mb-1">Interviewer</label>
+          <select name="interviewer_id" id="interviewer_id" class="block w-48 rounded-md border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="">All Interviewers</option>
+            <% @interviewers.each do |user| %>
+              <option value="<%= user.id %>" <%= "selected" if @current_filters[:interviewer_id] == user.id.to_s %>><%= user.first_name %> <%= user.last_name %></option>
+            <% end %>
+          </select>
+        </div>
+      <% end %>
+
+      <div>
+        <label for="sort" class="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
+        <select name="sort" id="sort" class="block w-44 rounded-md border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+          <option value="">Default</option>
+          <option value="scheduled_at_asc" <%= "selected" if @current_filters[:sort] == "scheduled_at_asc" %>>Schedule (earliest)</option>
+          <option value="scheduled_at_desc" <%= "selected" if @current_filters[:sort] == "scheduled_at_desc" %>>Schedule (latest)</option>
+          <option value="status" <%= "selected" if @current_filters[:sort] == "status" %>>Status</option>
+          <option value="candidate" <%= "selected" if @current_filters[:sort] == "candidate" %>>Candidate Name</option>
+          <option value="role" <%= "selected" if @current_filters[:sort] == "role" %>>Role</option>
+        </select>
+      </div>
+
+      <div>
+        <%= submit_tag "Filter", class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-offset-2" %>
+        <% if @current_filters.any? %>
+          <%= link_to "Clear", admin_assignments_path, class: "ml-2 text-sm text-gray-500 hover:text-gray-700" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Interviews table %>
+  <% if @interviews.any? %>
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interviewers</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @interviews.each do |interview| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= link_to interview.application.candidate.full_name,
+                      admin_application_path(interview.application),
+                      class: "text-sm font-medium text-indigo-600 hover:text-indigo-900" %>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <%= interview.application.role.title %>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                      <%= interview.interview_phase.position + 1 %>
+                    </span>
+                    <span class="text-sm text-gray-900"><%= interview.interview_phase.name %></span>
+                  </div>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <% interview.interview_participants.each do |ip| %>
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 mr-1 mb-1">
+                      <%= ip.user.first_name %> <%= ip.user.last_name %>
+                      <% if ip.user_id == current_user.id %>
+                        <span class="text-indigo-600 ml-0.5">(you)</span>
+                      <% end %>
+                    </span>
+                  <% end %>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <% if interview.scheduled_at.present? %>
+                    <div class="text-sm text-gray-900"><%= interview.scheduled_at.strftime("%b %d, %Y") %></div>
+                    <div class="text-xs text-gray-500"><%= interview.scheduled_at.strftime("%I:%M %p") %></div>
+                  <% else %>
+                    <span class="text-sm text-gray-400 italic">Not scheduled</span>
+                  <% end %>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                    <%= case interview.status
+                        when 'unscheduled' then 'bg-gray-100 text-gray-800'
+                        when 'scheduled' then 'bg-blue-100 text-blue-800'
+                        when 'complete' then 'bg-green-100 text-green-800'
+                        when 'cancelled' then 'bg-red-100 text-red-800'
+                        end %>">
+                    <%= interview.status.titleize %>
+                  </span>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <%= link_to "View", admin_application_path(interview.application),
+                      class: "text-indigo-600 hover:text-indigo-900 font-medium" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-lg border border-gray-200 px-6 py-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      </svg>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900">No assignments found</h3>
+      <p class="mt-1 text-sm text-gray-500">
+        <% if @current_filters.any? %>
+          Try adjusting your filters to see more results.
+        <% else %>
+          No interview assignments exist yet.
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</div>

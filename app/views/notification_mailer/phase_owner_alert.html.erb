@@ -1,0 +1,9 @@
+<h2>New candidate entering <%= @phase.name %></h2>
+
+<p>Hi <%= @phase_owner.first_name %>,</p>
+
+<p><strong><%= @candidate.full_name %></strong> has entered the <strong><%= @phase.name %></strong> phase for the <strong><%= @role.title %></strong> position.</p>
+
+<p>Please review their application and coordinate the next steps.</p>
+
+<p>Best regards,<br><%= @company.name %> Hiring</p>

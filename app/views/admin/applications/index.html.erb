@@ -1,0 +1,105 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @role.title %> — Applications</h1>
+      <%= link_to "← Back to role", admin_role_path(@role), class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+    </div>
+  </div>
+
+  <%# Status tabs %>
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="flex space-x-8 -mb-px">
+      <%= link_to "All", admin_role_applications_path(@role),
+          class: "whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm #{params[:status].blank? ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+      <% ApplicationSubmission::STATUSES.each do |status| %>
+        <%= link_to status.titleize, admin_role_applications_path(@role, status: status),
+            class: "whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm #{params[:status] == status ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+      <% end %>
+    </nav>
+  </div>
+
+  <%# Search bar %>
+  <div class="mb-6">
+    <%= form_with url: admin_role_applications_path(@role), method: :get, local: true, class: "flex gap-2" do |f| %>
+      <%= f.hidden_field :status, value: params[:status] %>
+      <%= f.text_field :search, value: params[:search], placeholder: "Search by candidate name or email...",
+          class: "block w-full max-w-md rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      <%= f.submit "Search", class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 cursor-pointer" %>
+      <% if params[:search].present? %>
+        <%= link_to "Clear", admin_role_applications_path(@role, status: params[:status]), class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50" %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Applications table %>
+  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Phase</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flags</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @applications.each do |application| %>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <%= link_to admin_application_path(application), class: "text-indigo-600 hover:text-indigo-900" do %>
+                <div class="font-medium"><%= application.candidate.full_name %></div>
+                <div class="text-sm text-gray-500"><%= application.candidate.email %></div>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                <%= case application.status
+                    when 'applied' then 'bg-blue-100 text-blue-800'
+                    when 'interviewing' then 'bg-yellow-100 text-yellow-800'
+                    when 'on_hold' then 'bg-gray-100 text-gray-800'
+                    when 'rejected' then 'bg-red-100 text-red-800'
+                    when 'accepted' then 'bg-green-100 text-green-800'
+                    when 'withdrawn' then 'bg-purple-100 text-purple-800'
+                    end %>">
+                <%= application.status.titleize %>
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= application.current_interview_phase&.name || "—" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                  <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= application.percent_complete %>%"></div>
+                </div>
+                <span class="text-xs text-gray-500"><%= application.percent_complete %>%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= application.created_at.strftime("%b %d, %Y") %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <% if application.bot_warning? %>
+                <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-2.5 py-0.5 text-xs font-medium">
+                  ⚠ Bot
+                </span>
+              <% end %>
+              <% if application.linked_application_count > 0 %>
+                <span class="inline-flex items-center rounded-full bg-indigo-100 text-indigo-800 px-2.5 py-0.5 text-xs font-medium">
+                  <%= application.linked_application_count %> linked
+                </span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @applications.empty? %>
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-gray-500">No applications found.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

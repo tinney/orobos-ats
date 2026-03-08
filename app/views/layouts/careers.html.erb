@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+  <title><%= current_company.name %> — Careers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <style>
+    :root {
+      --brand-color: <%= current_company.primary_color || '#4F46E5' %>;
+    }
+  </style>
+  <%= stylesheet_link_tag :app %>
+  <%= javascript_importmap_tags %>
+</head>
+<body class="h-full flex flex-col min-h-screen bg-gray-50">
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
+      <% if current_company.logo.attached? %>
+        <%= image_tag current_company.logo, class: "flex-shrink-0 h-10 w-10 rounded-full object-cover", alt: "#{current_company.name} logo" %>
+      <% else %>
+        <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background-color: <%= current_company.primary_color || '#4F46E5' %>;">
+          <%= current_company.name.first.upcase %>
+        </div>
+      <% end %>
+      <div>
+        <h1 class="text-lg font-semibold text-gray-900"><%= current_company.name %></h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <% if flash[:notice] %>
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="rounded-md bg-green-50 p-4">
+          <p class="text-sm text-green-800"><%= flash[:notice] %></p>
+        </div>
+      </div>
+    <% end %>
+
+    <% if flash[:alert] %>
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="rounded-md bg-red-50 p-4">
+          <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+        </div>
+      </div>
+    <% end %>
+
+    <%= yield %>
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 mt-auto">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-400">
+      Powered by <span class="font-medium text-gray-500">Ouroboros</span>
+    </div>
+  </footer>
+</body>
+</html>

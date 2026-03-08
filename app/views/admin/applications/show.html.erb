@@ -1,0 +1,382 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to #{@role.title} applications", admin_role_applications_path(@role), class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <%# Header with candidate info and status %>
+  <div class="bg-white rounded-lg border border-gray-200 mb-6">
+    <div class="px-6 py-5 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+          <%= @candidate.full_name %>
+          <% if @application.bot_warning? %>
+            <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-3 py-1 text-sm font-medium ml-2">
+              ⚠ Bot Flagged
+              <span class="text-xs ml-1">(<%= @application.bot_reasons.join(", ") %>)</span>
+            </span>
+          <% end %>
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">
+          <%= @candidate.email %> · <%= @role.title %>
+          <% if @application.transferred_from_role_id.present? %>
+            <span class="text-xs text-indigo-600 ml-2">(transferred)</span>
+          <% end %>
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium
+          <%= case @application.status
+              when 'applied' then 'bg-blue-100 text-blue-800'
+              when 'interviewing' then 'bg-yellow-100 text-yellow-800'
+              when 'on_hold' then 'bg-gray-100 text-gray-800'
+              when 'rejected' then 'bg-red-100 text-red-800'
+              when 'accepted' then 'bg-green-100 text-green-800'
+              when 'withdrawn' then 'bg-purple-100 text-purple-800'
+              end %>">
+          <%= @application.status.titleize %>
+        </span>
+        <span class="text-sm text-gray-500"><%= @application.percent_complete %>% complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <%# Main content area %>
+    <div class="lg:col-span-2 space-y-6">
+      <%# Bot flag dismiss %>
+      <% if @application.bot_warning? %>
+        <div class="bg-orange-50 border border-orange-200 rounded-lg px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-medium text-orange-800">Bot Detection Warning</h3>
+              <p class="text-sm text-orange-700 mt-1">Reasons: <%= @application.bot_reasons.join(", ") %> · Score: <%= @application.bot_score %></p>
+            </div>
+            <%= button_to "Dismiss", dismiss_bot_flag_admin_application_path(@application), method: :patch,
+                class: "inline-flex items-center rounded-md border border-orange-300 bg-white px-3 py-1.5 text-sm font-medium text-orange-700 hover:bg-orange-50" %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Candidate details %>
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Candidate Details</h2>
+        </div>
+        <div class="px-6 py-4 space-y-3">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-gray-500">Email:</span>
+              <span class="ml-2 text-gray-900"><%= @candidate.email %></span>
+            </div>
+            <div>
+              <span class="text-gray-500">Phone:</span>
+              <span class="ml-2 text-gray-900"><%= @candidate.phone.presence || "—" %></span>
+            </div>
+            <div>
+              <span class="text-gray-500">Applied:</span>
+              <span class="ml-2 text-gray-900"><%= @application.created_at.strftime("%b %d, %Y at %I:%M %p") %></span>
+            </div>
+            <% if @application.resume.attached? %>
+              <div>
+                <span class="text-gray-500">Resume:</span>
+                <%= link_to "Download", rails_blob_path(@application.resume, disposition: "attachment"), class: "ml-2 text-indigo-600 hover:text-indigo-800" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Custom question answers (snapshot) %>
+      <% if @question_snapshots.any? %>
+        <div class="bg-white rounded-lg border border-gray-200">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Application Responses</h2>
+          </div>
+          <div class="px-6 py-4 space-y-4">
+            <% @question_snapshots.each do |snapshot| %>
+              <div>
+                <p class="text-sm font-medium text-gray-700"><%= snapshot.label %></p>
+                <p class="text-sm text-gray-900 mt-1"><%= snapshot.answer.presence || "—" %></p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Interview phases — panel management with Stimulus controllers %>
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Interview Phases</h2>
+        </div>
+        <div class="px-6 py-4 space-y-4">
+          <% @interview_phases.each do |phase| %>
+            <% interview = @interviews.find { |i| i.interview_phase_id == phase.id } %>
+            <% is_current = phase.id == @application.current_interview_phase_id %>
+
+            <%# Current phase indicator %>
+            <% if is_current %>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center rounded-full bg-indigo-100 text-indigo-700 px-2.5 py-0.5 text-xs font-semibold">
+                  Current Phase
+                </span>
+              </div>
+            <% end %>
+
+            <%# Render the reusable panel partial with Stimulus controllers %>
+            <%= render "admin/interviews/interview_panel",
+                application: @application,
+                phase: phase,
+                interview: interview,
+                available_users: @available_interviewers %>
+
+            <%# Additional interview details below the panel card %>
+            <% if interview %>
+              <div class="ml-4 space-y-2">
+                <%# Scorecards - visibility based on role (blind feedback enforcement) %>
+                <% visible_scorecards = interview.scorecards.select { |sc| can_view_scorecard?(sc, interview) } %>
+                <% if visible_scorecards.any? %>
+                  <div class="bg-gray-50 rounded-md px-4 py-3">
+                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Scorecards</h5>
+                    <div class="space-y-1">
+                      <% visible_scorecards.each do |scorecard| %>
+                        <div class="flex items-center gap-2 text-xs text-gray-600">
+                          <span><%= scorecard.user.full_name %>:</span>
+                          <% if scorecard.average_rating %>
+                            <span class="font-medium"><%= scorecard.average_rating %>/5</span>
+                          <% end %>
+                          <%= link_to "View", admin_interview_scorecard_path(interview, scorecard), class: "text-indigo-600 hover:text-indigo-800" %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+
+                <%# Submit scorecard link for assigned panel interviewers %>
+                <% if interview.panel_member?(current_user) && !interview.scorecards.exists?(user: current_user) %>
+                  <div>
+                    <%= link_to "Submit Scorecard", new_admin_interview_scorecard_path(interview),
+                        class: "text-xs text-indigo-600 hover:text-indigo-800 font-medium" %>
+                  </div>
+                <% end %>
+
+                <%# Interview lifecycle actions for hiring managers %>
+                <% if current_user.at_least_hiring_manager? && (interview.unscheduled? || interview.scheduled?) %>
+                  <div class="flex items-center gap-3">
+                    <%= button_to "Mark Complete", complete_admin_application_interview_phase_interview_path(@application, phase),
+                        method: :patch,
+                        class: "text-xs text-green-600 hover:text-green-800 bg-transparent border-0 cursor-pointer font-medium" %>
+                    <%= button_to "Cancel Interview", cancel_admin_application_interview_phase_interview_path(@application, phase),
+                        method: :patch,
+                        class: "text-xs text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer font-medium",
+                        data: { confirm: "Cancel this interview?" } %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <%# Move to phase button for hiring managers %>
+            <% if @application.active? && current_user.at_least_hiring_manager? && !is_current %>
+              <div class="ml-4">
+                <%= button_to "Move to this phase", move_phase_admin_application_path(@application, phase_id: phase.id),
+                    method: :patch,
+                    class: "text-xs text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer" %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Offers %>
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900">Offers</h2>
+          <% if current_user.at_least_hiring_manager? && @application.active? %>
+            <button type="button" class="text-sm text-indigo-600 hover:text-indigo-800" data-controller="toggle" data-action="click->toggle#toggle" data-toggle-target-value="offer-form">
+              + New Offer
+            </button>
+          <% end %>
+        </div>
+        <div class="px-6 py-4" id="offer-form" style="display: none;">
+          <%= form_with url: admin_application_offers_path(@application), method: :post, local: true, class: "space-y-4" do |f| %>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <%= f.label :salary, "Salary", class: "block text-sm font-medium text-gray-700" %>
+                <%= f.number_field :salary, step: "0.01", class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+              </div>
+              <div>
+                <%= f.label :start_date, "Start Date", class: "block text-sm font-medium text-gray-700" %>
+                <%= f.date_field :start_date, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+              </div>
+            </div>
+            <div>
+              <%= f.label :notes, "Notes", class: "block text-sm font-medium text-gray-700" %>
+              <%= f.text_area :notes, rows: 2, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+            </div>
+            <%= f.submit "Create Offer", class: "inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 cursor-pointer" %>
+          <% end %>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <% @offers.each do |offer| %>
+            <div class="px-6 py-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-sm font-medium text-gray-900">
+                    <%= number_to_currency(offer.salary) if offer.salary %>
+                  </span>
+                  <span class="text-xs text-gray-500 ml-2">Rev. <%= offer.revision %></span>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ml-2
+                    <%= case offer.status
+                        when 'pending' then 'bg-yellow-100 text-yellow-800'
+                        when 'accepted' then 'bg-green-100 text-green-800'
+                        when 'declined' then 'bg-red-100 text-red-800'
+                        when 'revoked' then 'bg-gray-100 text-gray-800'
+                        end %>">
+                    <%= offer.status.titleize %>
+                  </span>
+                </div>
+                <% if current_user.at_least_hiring_manager? %>
+                  <%= link_to "Edit", edit_admin_application_offer_path(@application, offer), class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+                <% end %>
+              </div>
+              <% if offer.start_date %>
+                <p class="text-xs text-gray-500 mt-1">Start date: <%= offer.start_date.strftime("%b %d, %Y") %></p>
+              <% end %>
+              <% if offer.notes.present? %>
+                <p class="text-sm text-gray-600 mt-1"><%= offer.notes %></p>
+              <% end %>
+            </div>
+          <% end %>
+          <% if @offers.empty? %>
+            <div class="px-6 py-4 text-sm text-gray-500">No offers yet.</div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Sidebar %>
+    <div class="space-y-6">
+      <%# Actions %>
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-900">Actions</h3>
+        </div>
+        <div class="px-6 py-4 space-y-2">
+          <% if @application.active? %>
+            <% unless @application.status == "interviewing" %>
+              <%= button_to "Start Interviewing", transition_admin_application_path(@application, status: "interviewing"),
+                  method: :patch, class: "w-full text-left text-sm text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer py-1" %>
+            <% end %>
+            <% if current_user.at_least_hiring_manager? && @application.status != "on_hold" %>
+              <%= button_to "Put On Hold", transition_admin_application_path(@application, status: "on_hold"),
+                  method: :patch, class: "w-full text-left text-sm text-yellow-600 hover:text-yellow-800 bg-transparent border-0 cursor-pointer py-1" %>
+            <% end %>
+            <%= button_to "Accept", transition_admin_application_path(@application, status: "accepted"),
+                method: :patch, class: "w-full text-left text-sm text-green-600 hover:text-green-800 bg-transparent border-0 cursor-pointer py-1",
+                data: { confirm: "Accept this application?" } %>
+
+            <%# Reject with reason %>
+            <details class="text-sm">
+              <summary class="text-red-600 hover:text-red-800 cursor-pointer py-1">Reject...</summary>
+              <div class="mt-2 pl-2">
+                <% ApplicationSubmission::REJECTION_REASONS.each do |reason| %>
+                  <%= button_to reason, transition_admin_application_path(@application, status: "rejected", reason: reason),
+                      method: :patch, class: "block w-full text-left text-xs text-gray-600 hover:text-red-600 py-0.5 bg-transparent border-0 cursor-pointer" %>
+                <% end %>
+              </div>
+            </details>
+
+            <%# Withdraw with reason %>
+            <details class="text-sm">
+              <summary class="text-purple-600 hover:text-purple-800 cursor-pointer py-1">Withdraw...</summary>
+              <div class="mt-2 pl-2">
+                <% ApplicationSubmission::WITHDRAWAL_REASONS.each do |reason| %>
+                  <%= button_to reason, transition_admin_application_path(@application, status: "withdrawn", reason: reason),
+                      method: :patch, class: "block w-full text-left text-xs text-gray-600 hover:text-purple-600 py-0.5 bg-transparent border-0 cursor-pointer" %>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+
+          <% if @application.terminal? %>
+            <%= button_to "Reopen", transition_admin_application_path(@application, status: "applied"),
+                method: :patch, class: "w-full text-left text-sm text-indigo-600 hover:text-indigo-800 bg-transparent border-0 cursor-pointer py-1" %>
+          <% end %>
+
+          <hr class="my-2">
+
+          <%# Transfer %>
+          <% if @application.active? && current_user.at_least_hiring_manager? %>
+            <details class="text-sm">
+              <summary class="text-indigo-600 hover:text-indigo-800 cursor-pointer py-1">Transfer to role...</summary>
+              <div class="mt-2 pl-2">
+                <% Role.where.not(id: @role.id).where(status: %w[published internal_only]).each do |target_role| %>
+                  <%= button_to target_role.title, transfer_admin_application_path(@application, target_role_id: target_role.id),
+                      method: :post, class: "block w-full text-left text-xs text-gray-600 hover:text-indigo-600 py-0.5 bg-transparent border-0 cursor-pointer",
+                      data: { confirm: "Transfer this application to #{target_role.title}? Interview and offer data will be wiped." } %>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+
+          <%# Destroy %>
+          <% if current_user.admin? %>
+            <%= button_to "Delete Permanently", admin_application_path(@application),
+                method: :delete, class: "w-full text-left text-sm text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer py-1",
+                data: { confirm: "This will permanently delete this application with no trace. Are you sure?" } %>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Linked applications %>
+      <% if @linked_applications.any? %>
+        <div class="bg-white rounded-lg border border-gray-200">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-900">
+              Linked Applications
+              <span class="inline-flex items-center rounded-full bg-indigo-100 text-indigo-800 px-2 py-0.5 text-xs font-medium ml-1">
+                <%= @linked_applications.count %>
+              </span>
+            </h3>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <% @linked_applications.each do |linked| %>
+              <div class="px-6 py-3">
+                <%= link_to admin_application_path(linked), class: "text-sm text-indigo-600 hover:text-indigo-800" do %>
+                  <div class="font-medium"><%= linked.role.title %></div>
+                  <div class="text-xs text-gray-500"><%= linked.status.titleize %> · <%= linked.created_at.strftime("%b %d") %></div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Application info %>
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-900">Application Info</h3>
+        </div>
+        <div class="px-6 py-4 text-sm space-y-2">
+          <% if @application.rejection_reason.present? %>
+            <div>
+              <span class="text-gray-500">Rejection reason:</span>
+              <span class="text-gray-900 ml-1"><%= @application.rejection_reason %></span>
+            </div>
+          <% end %>
+          <% if @application.withdrawal_reason.present? %>
+            <div>
+              <span class="text-gray-500">Withdrawal reason:</span>
+              <span class="text-gray-900 ml-1"><%= @application.withdrawal_reason %></span>
+            </div>
+          <% end %>
+          <% if @application.submission_duration_ms %>
+            <div>
+              <span class="text-gray-500">Form time:</span>
+              <span class="text-gray-900 ml-1"><%= (@application.submission_duration_ms / 1000.0).round(1) %>s</span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,293 @@
+<div class="max-w-4xl">
+  <%# Header with title, status badge, and actions %>
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900"><%= @role.title %></h1>
+      <div class="mt-2 flex items-center space-x-3">
+        <%= render "status_badge", role: @role %>
+        <% if @role.location.present? %>
+          <span class="text-sm text-gray-500"><%= @role.location %></span>
+        <% end %>
+        <% if @role.remote? %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Remote</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <%= link_to "Edit", edit_admin_role_path(@role), class: "inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50" %>
+      <%= render "transition_buttons", role: @role %>
+    </div>
+  </div>
+
+  <%# Details card %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Role Details</h2>
+    </div>
+    <dl class="divide-y divide-gray-200">
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Status</dt>
+        <dd class="text-sm text-gray-900 col-span-2"><%= render "status_badge", role: @role %></dd>
+      </div>
+      <% if @role.salary_range.present? %>
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Salary Range</dt>
+          <dd class="text-sm text-gray-900 col-span-2"><%= @role.salary_range %></dd>
+        </div>
+      <% end %>
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Location</dt>
+        <dd class="text-sm text-gray-900 col-span-2">
+          <%= @role.location.presence || "—" %>
+          <% if @role.remote? %>
+            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Remote</span>
+          <% end %>
+        </dd>
+      </div>
+      <div class="px-6 py-4 grid grid-cols-3 gap-4">
+        <dt class="text-sm font-medium text-gray-500">Created</dt>
+        <dd class="text-sm text-gray-900 col-span-2"><%= @role.created_at.strftime("%B %d, %Y") %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <%# Shareable URL %>
+  <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Shareable URL</h2>
+      <p class="mt-1 text-sm text-gray-500">
+        <% if @role.published? %>
+          This public link is live and can be shared with candidates.
+        <% elsif @role.internal_only? %>
+          This role is internal only. Share this link with internal team members.
+        <% else %>
+          This URL will become active when the role is published.
+        <% end %>
+      </p>
+    </div>
+    <div class="px-6 py-4" data-controller="clipboard">
+      <div class="flex items-center space-x-3">
+        <input type="text" readonly
+               value="<%= job_url(@role.slug, subdomain: current_company.subdomain) %>"
+               data-clipboard-target="source"
+               class="flex-1 text-sm border-gray-300 rounded-md bg-gray-50 text-gray-700 font-mono select-all">
+        <button type="button"
+                data-action="click->clipboard#copy"
+                data-clipboard-target="button"
+                class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+          Copy URL
+        </button>
+      </div>
+      <p class="mt-2 text-xs text-gray-400">Slug: <code class="bg-gray-100 px-1 py-0.5 rounded"><%= @role.slug %></code></p>
+    </div>
+  </div>
+
+  <%# Description %>
+  <% if @role.description.present? %>
+    <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div class="px-6 py-5 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">Description</h2>
+      </div>
+      <div class="px-6 py-4 prose prose-sm max-w-none">
+        <%= @role.description %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Interview Phases Section %>
+  <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Interview Phases</h2>
+      <p class="mt-1 text-sm text-gray-500">Define and order the interview stages for this role. Candidates progress through these phases sequentially.</p>
+      <% unless @role.publishable? %>
+        <p class="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+          <strong>Publishing blocked:</strong> At least one interview phase must have a phase owner assigned before this role can be published.
+        </p>
+      <% end %>
+    </div>
+
+    <% if @interview_phases.any? %>
+      <div data-controller="phase-reorder" data-phase-reorder-role-id-value="<%= @role.id %>">
+        <ul class="divide-y divide-gray-200" data-phase-reorder-target="list">
+          <% @interview_phases.each_with_index do |phase, index| %>
+            <li class="px-6 py-4 flex items-center justify-between group" data-phase-reorder-target="item" data-phase-id="<%= phase.id %>">
+              <div class="flex items-center space-x-4">
+                <%# Drag handle %>
+                <span class="cursor-grab text-gray-400 hover:text-gray-600" data-phase-reorder-target="handle" title="Drag to reorder">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                  </svg>
+                </span>
+
+                <%# Position badge %>
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                  <%= index + 1 %>
+                </span>
+
+                <%# Phase name with inline edit %>
+                <div data-controller="inline-edit">
+                  <span class="text-sm font-medium text-gray-900 cursor-pointer" data-inline-edit-target="display" data-action="dblclick->inline-edit#edit"><%= phase.name %></span>
+                  <%= form_with model: phase, url: admin_role_interview_phase_path(@role, phase), method: :patch, class: "hidden", data: { inline_edit_target: "form" } do |f| %>
+                    <div class="flex items-center space-x-2">
+                      <%= f.text_field :name, value: phase.name, class: "text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500", data: { inline_edit_target: "input", action: "keydown.esc->inline-edit#cancel" } %>
+                      <%= f.submit "Save", class: "text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer" %>
+                      <button type="button" class="text-xs px-2 py-1 text-gray-600 hover:text-gray-800" data-action="click->inline-edit#cancel">Cancel</button>
+                    </div>
+                  <% end %>
+                </div>
+
+                <%# Phase owner assignment %>
+                <div class="ml-2">
+                  <%= form_with model: phase, url: admin_role_interview_phase_path(@role, phase), method: :patch, class: "inline-flex items-center" do |f| %>
+                    <%= f.select :phase_owner_id,
+                      options_from_collection_for_select(@available_owners, :id, :full_name, phase.phase_owner_id),
+                      { include_blank: "No owner" },
+                      class: "text-xs border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 py-1",
+                      onchange: "this.form.requestSubmit()" %>
+                    <noscript><%= f.submit "Set", class: "ml-1 text-xs px-2 py-1 bg-blue-600 text-white rounded cursor-pointer" %></noscript>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-1">
+                <%# Move up button %>
+                <% if index > 0 %>
+                  <%= button_to move_admin_role_interview_phase_path(@role, phase), method: :patch, params: { position: index - 1 }, class: "p-1 text-gray-400 hover:text-gray-600", title: "Move up", form: { class: "inline" } do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="p-1 text-gray-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg></span>
+                <% end %>
+
+                <%# Move down button %>
+                <% if index < @interview_phases.length - 1 %>
+                  <%= button_to move_admin_role_interview_phase_path(@role, phase), method: :patch, params: { position: index + 1 }, class: "p-1 text-gray-400 hover:text-gray-600", title: "Move down", form: { class: "inline" } do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  <% end %>
+                <% else %>
+                  <span class="p-1 text-gray-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span>
+                <% end %>
+
+                <%# Edit button %>
+                <button type="button" class="p-1 text-gray-400 hover:text-blue-600" data-action="click->inline-edit#edit" title="Rename">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+
+                <%# Delete button %>
+                <%= button_to admin_role_interview_phase_path(@role, phase), method: :delete, class: "p-1 text-gray-400 hover:text-red-600", title: "Remove phase", data: { confirm: "Remove \"#{phase.name}\"? This cannot be undone." }, form: { class: "inline" } do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% else %>
+      <div class="px-6 py-8 text-center">
+        <p class="text-sm text-gray-500">No interview phases defined yet. Add your first phase below.</p>
+      </div>
+    <% end %>
+
+    <%# Add new phase form %>
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+      <%= form_with model: @interview_phase, url: admin_role_interview_phases_path(@role), method: :post, class: "flex items-center space-x-3" do |f| %>
+        <%= f.text_field :name, placeholder: "New phase name", class: "flex-1 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500", required: true %>
+        <%= f.submit "Add Phase", class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Applications Pipeline Link %>
+  <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-medium text-gray-900">Applications</h2>
+        <p class="mt-1 text-sm text-gray-500"><%= @role.applications.count %> total applications</p>
+      </div>
+      <%= link_to "View Pipeline →", admin_role_applications_path(@role),
+          class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700" %>
+    </div>
+  </div>
+
+  <%# Custom Questions Section %>
+  <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Custom Questions</h2>
+      <p class="mt-1 text-sm text-gray-500">Add custom questions to the application form for this role. Changes only affect new applications.</p>
+    </div>
+
+    <% if @role.custom_questions.any? %>
+      <ul class="divide-y divide-gray-200">
+        <% @role.custom_questions.ordered.each do |question| %>
+          <li class="px-6 py-4 flex items-center justify-between">
+            <div>
+              <span class="text-sm font-medium text-gray-900"><%= question.label %></span>
+              <span class="text-xs text-gray-500 ml-2">(<%= question.field_type %>)</span>
+              <% if question.required? %>
+                <span class="text-xs text-red-600 ml-1">Required</span>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-2">
+              <%= button_to admin_role_custom_question_path(@role, question), method: :delete,
+                  class: "text-xs text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer",
+                  data: { confirm: "Remove this question?" } do %>
+                Remove
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="px-6 py-6 text-center text-sm text-gray-500">No custom questions yet.</div>
+    <% end %>
+
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+      <%= form_with url: admin_role_custom_questions_path(@role), method: :post, local: true, class: "flex items-center gap-3" do |f| %>
+        <%= f.text_field :label, name: "custom_question[label]", placeholder: "Question text",
+            class: "flex-1 text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500", required: true %>
+        <%= f.select :field_type, [["Text", "text"], ["Textarea", "textarea"], ["Select", "select"]],
+            {}, { name: "custom_question[field_type]",
+            class: "text-sm border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" } %>
+        <label class="flex items-center text-sm text-gray-600">
+          <%= f.check_box :required, { name: "custom_question[required]" }, "true", "false" %> Required
+        </label>
+        <%= f.submit "Add Question", class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Preview Link Section %>
+  <div class="mt-6 bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Preview Link</h2>
+      <p class="mt-1 text-sm text-gray-500">Share a preview link to let others view this role before it's published.</p>
+    </div>
+    <div class="px-6 py-4">
+      <% if @role.preview_token.present? %>
+        <div class="flex items-center space-x-3">
+          <input type="text" readonly value="<%= role_preview_url(@role, token: @role.preview_token) %>" class="flex-1 text-sm border-gray-300 rounded-md bg-gray-50 text-gray-700 select-all">
+          <%= button_to revoke_preview_token_admin_role_path(@role), method: :delete, class: "inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100", data: { confirm: "Revoke preview link? Existing links will stop working." } do %>
+            Revoke
+          <% end %>
+        </div>
+      <% else %>
+        <%= button_to generate_preview_token_admin_role_path(@role), method: :post, class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer" do %>
+          Generate Preview Link
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "← Back to Roles", admin_roles_path, class: "text-sm text-gray-600 hover:text-gray-800" %>
+  </div>
+</div>

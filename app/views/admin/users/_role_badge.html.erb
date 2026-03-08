@@ -1,0 +1,13 @@
+<%# Role badge with color coding by role level %>
+<%
+  role_config = {
+    "admin" => { bg: "bg-purple-100", text: "text-purple-800", icon: "★" },
+    "hiring_manager" => { bg: "bg-blue-100", text: "text-blue-800", icon: "◆" },
+    "interviewer" => { bg: "bg-gray-100", text: "text-gray-700", icon: "●" }
+  }
+  config = role_config[user.role] || role_config["interviewer"]
+%>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= config[:bg] %> <%= config[:text] %>">
+  <span class="mr-1" aria-hidden="true"><%= config[:icon] %></span>
+  <span><%= user.role.titleize %></span>
+</span>

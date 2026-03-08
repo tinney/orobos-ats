@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin — #{current_company&.name || 'Ouroboros'}" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="Ouroboros">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-100 min-h-screen"
+        <% if current_user %>
+        data-controller="timezone"
+        data-timezone-url-value="<%= admin_timezone_path %>"
+        data-timezone-current-value="<%= current_user.time_zone %>"
+        <% end %>>
+    <%# Top navigation bar %>
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-14">
+          <div class="flex items-center space-x-8">
+            <span class="text-lg font-semibold text-gray-900"><%= current_company&.name || "Ouroboros" %></span>
+            <div class="flex space-x-4">
+              <%= link_to "Dashboard", admin_dashboard_path, class: "text-sm font-medium #{request.path == '/admin' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}" %>
+              <%= link_to "Roles", admin_roles_path, class: "text-sm font-medium #{request.path.start_with?('/admin/roles') ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}" %>
+              <% if current_user&.role_at_least?("hiring_manager") %>
+                <%= link_to "Candidates", admin_candidates_path, class: "text-sm font-medium #{request.path.start_with?('/admin/candidates') ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}" %>
+              <% end %>
+              <%= link_to "My Interviews", admin_my_interviews_path, class: "text-sm font-medium #{request.path.start_with?('/admin/my_interviews') ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}" %>
+              <% if current_user&.admin? %>
+                <%= link_to "Team", admin_users_path, class: "text-sm font-medium #{request.path.start_with?('/admin/users') ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}" %>
+              <% end %>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500"><%= current_user&.full_name %></span>
+            <%= button_to "Log out", logout_path, method: :delete, class: "text-sm text-gray-500 hover:text-gray-700", form: { class: "inline" } %>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <%# Main content %>
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <% if flash[:notice] %>
+        <div class="mb-4 rounded-md bg-green-50 p-4">
+          <p class="text-sm text-green-800"><%= flash[:notice] %></p>
+        </div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="mb-4 rounded-md bg-red-50 p-4">
+          <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+        </div>
+      <% end %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

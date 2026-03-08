@@ -1,0 +1,28 @@
+<%# Renders available state transition buttons for a role %>
+<%
+  transition_config = {
+    "published"     => { label: "Publish",        css: "bg-green-600 hover:bg-green-700 text-white" },
+    "internal_only" => { label: "Make Internal",   css: "bg-yellow-600 hover:bg-yellow-700 text-white" },
+    "closed"        => { label: "Close",           css: "bg-red-600 hover:bg-red-700 text-white" },
+    "draft"         => { label: "Revert to Draft", css: "bg-gray-600 hover:bg-gray-700 text-white" }
+  }
+
+  available_transitions = Role::TRANSITIONS.fetch(role.status, [])
+  # Filter out "published" if the role isn't publishable (requires phase owner)
+  available_transitions = available_transitions.reject { |t| t == "published" && !role.publishable? }
+%>
+
+<% if available_transitions.any? %>
+  <div class="flex items-center space-x-2">
+    <% available_transitions.each do |target_status| %>
+      <% config = transition_config[target_status] %>
+      <% if config %>
+        <%= button_to config[:label],
+              transition_admin_role_path(role, status: target_status),
+              method: :patch,
+              class: "inline-flex items-center px-3 py-2 text-sm font-medium rounded-md #{config[:css]}",
+              data: { confirm: "Are you sure you want to #{config[:label].downcase} \"#{role.title}\"?" } %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

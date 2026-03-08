@@ -1,0 +1,72 @@
+<%= form_with(model: [:admin, role], class: "space-y-6", data: { controller: "role-form" }) do |f| %>
+  <% if role.errors.any? %>
+    <div class="p-4 bg-red-50 border border-red-200 rounded-md">
+      <h3 class="text-sm font-medium text-red-800">
+        <%= pluralize(role.errors.count, "error") %> prevented this role from being saved:
+      </h3>
+      <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+        <% role.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# Title %>
+  <div>
+    <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. Senior Software Engineer", required: true %>
+  </div>
+
+  <%# Status %>
+  <div>
+    <%= f.label :status, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.select :status, Role::STATUSES.map { |s| [s.titleize, s] }, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+    <p class="mt-1 text-xs text-gray-500">Only published roles are visible on the public careers page.</p>
+  </div>
+
+  <%# Location + Remote %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <%= f.label :location, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :location, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. San Francisco, CA", data: { role_form_target: "locationField" } %>
+    </div>
+
+    <div class="flex items-center pt-6">
+      <%= f.check_box :remote, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500", data: { role_form_target: "remoteCheckbox", action: "change->role-form#toggleRemote" } %>
+      <%= f.label :remote, "Remote position", class: "ml-2 text-sm text-gray-700" %>
+    </div>
+  </div>
+
+  <%# Salary Range %>
+  <fieldset>
+    <legend class="block text-sm font-medium text-gray-700 mb-1">Salary Range <span class="font-normal text-gray-400">(optional)</span></legend>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <%= f.label :salary_currency, "Currency", class: "block text-xs font-medium text-gray-500" %>
+        <%= f.select :salary_currency, [["USD", "USD"], ["EUR", "EUR"], ["GBP", "GBP"], ["CAD", "CAD"], ["AUD", "AUD"]], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+      </div>
+      <div>
+        <%= f.label :salary_min, "Minimum", class: "block text-xs font-medium text-gray-500" %>
+        <%= f.number_field :salary_min, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 80000", min: 0, step: 1000 %>
+      </div>
+      <div>
+        <%= f.label :salary_max, "Maximum", class: "block text-xs font-medium text-gray-500" %>
+        <%= f.number_field :salary_max, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 120000", min: 0, step: 1000 %>
+      </div>
+    </div>
+  </fieldset>
+
+  <%# Description with Trix/ActionText %>
+  <div>
+    <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <p class="text-xs text-gray-500 mb-2">Describe the role responsibilities, requirements, and benefits. This will be shown on the public careers page.</p>
+    <%= f.rich_text_area :description, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[200px]" %>
+  </div>
+
+  <%# Actions %>
+  <div class="flex items-center space-x-4 pt-4 border-t border-gray-200">
+    <%= f.submit(role.new_record? ? "Create Role" : "Update Role", class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer") %>
+    <%= link_to "Cancel", admin_roles_path, class: "text-sm text-gray-600 hover:text-gray-800" %>
+  </div>
+<% end %>

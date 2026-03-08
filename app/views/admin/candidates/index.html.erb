@@ -1,0 +1,168 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8" data-controller="candidates-list">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">All Candidates</h1>
+  </div>
+
+  <%# Filters and view toggle toolbar %>
+  <div class="flex flex-wrap items-center gap-4 mb-6">
+    <%# Role filter %>
+    <div class="flex items-center gap-2">
+      <label for="role-filter" class="text-sm font-medium text-gray-700">Role:</label>
+      <select id="role-filter"
+              data-candidates-list-target="roleFilter"
+              data-action="change->candidates-list#filterByRole"
+              class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+        <option value="">All Roles</option>
+        <% @roles.each do |role| %>
+          <option value="<%= role.id %>"><%= role.title %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <%# Status filter %>
+    <div class="flex items-center gap-2">
+      <label for="status-filter" class="text-sm font-medium text-gray-700">Status:</label>
+      <select id="status-filter"
+              data-candidates-list-target="statusFilter"
+              data-action="change->candidates-list#filterByStatus"
+              class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+        <option value="">All Statuses</option>
+        <% @statuses.each do |status| %>
+          <option value="<%= status %>"><%= status.titleize %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <%# View toggle %>
+    <div class="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+      <button type="button"
+              data-action="click->candidates-list#showFlat"
+              class="px-3 py-1.5 text-sm font-medium rounded-md bg-white text-gray-900 shadow-sm"
+              data-candidates-list-view-button="flat">
+        Flat List
+      </button>
+      <button type="button"
+              data-action="click->candidates-list#showGrouped"
+              class="px-3 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900"
+              data-candidates-list-view-button="grouped">
+        Grouped by Role
+      </button>
+    </div>
+  </div>
+
+  <%# Flat table view (default) %>
+  <div data-candidates-list-target="table" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer select-none text-gray-500"
+              data-action="click->candidates-list#sort"
+              data-sort-column="candidateName"
+              data-candidates-list-target="sortHeader">
+            Candidate<span data-sort-indicator></span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer select-none text-gray-500"
+              data-action="click->candidates-list#sort"
+              data-sort-column="roleTitle"
+              data-candidates-list-target="sortHeader">
+            Role<span data-sort-indicator></span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer select-none text-gray-500"
+              data-action="click->candidates-list#sort"
+              data-sort-column="status"
+              data-candidates-list-target="sortHeader">
+            Status<span data-sort-indicator></span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Current Phase
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer select-none text-gray-500"
+              data-action="click->candidates-list#sort"
+              data-sort-column="progress"
+              data-candidates-list-target="sortHeader">
+            Progress<span data-sort-indicator></span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer select-none text-gray-500"
+              data-action="click->candidates-list#sort"
+              data-sort-column="appliedAt"
+              data-candidates-list-target="sortHeader">
+            Applied<span data-sort-indicator></span>
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Flags
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @applications.each do |application| %>
+          <tr data-candidates-list-target="row"
+              data-role="<%= application.role_id %>"
+              data-role-title="<%= application.role.title %>"
+              data-status="<%= application.status %>"
+              data-candidate-name="<%= application.candidate.full_name %>"
+              data-progress="<%= application.percent_complete %>"
+              data-applied-at="<%= application.created_at.iso8601 %>">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <%= link_to admin_application_path(application), class: "text-indigo-600 hover:text-indigo-900" do %>
+                <div class="font-medium"><%= application.candidate.full_name %></div>
+                <div class="text-sm text-gray-500"><%= application.candidate.email %></div>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              <%= link_to application.role.title, admin_role_path(application.role), class: "text-indigo-600 hover:text-indigo-900" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                <%= case application.status
+                    when 'applied' then 'bg-blue-100 text-blue-800'
+                    when 'interviewing' then 'bg-yellow-100 text-yellow-800'
+                    when 'on_hold' then 'bg-gray-100 text-gray-800'
+                    when 'rejected' then 'bg-red-100 text-red-800'
+                    when 'accepted' then 'bg-green-100 text-green-800'
+                    when 'withdrawn' then 'bg-purple-100 text-purple-800'
+                    end %>">
+                <%= application.status.titleize %>
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= application.current_interview_phase&.name || "—" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                  <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= application.percent_complete %>%"></div>
+                </div>
+                <span class="text-xs text-gray-500"><%= application.percent_complete %>%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= application.created_at.strftime("%b %d, %Y") %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <% if application.bot_warning? %>
+                <span class="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-2.5 py-0.5 text-xs font-medium">
+                  ⚠ Bot
+                </span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%# Grouped view (hidden by default, populated by Stimulus) %>
+  <div data-candidates-list-target="grouped" style="display: none;"></div>
+
+  <%# Empty state for filtered results %>
+  <div data-candidates-list-target="emptyMessage" style="display: none;"
+       class="bg-white rounded-lg border border-gray-200 py-12 text-center text-gray-500">
+    No candidates found matching the selected filters.
+  </div>
+
+  <% if @applications.empty? %>
+    <div class="bg-white rounded-lg border border-gray-200 py-12 text-center text-gray-500 mt-4">
+      No applications yet. Candidates will appear here after applying through public job pages.
+    </div>
+  <% end %>
+</div>

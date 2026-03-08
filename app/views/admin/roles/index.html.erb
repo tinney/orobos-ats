@@ -1,0 +1,63 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Roles</h1>
+    <p class="mt-1 text-sm text-gray-500">Manage your organization's open positions.</p>
+  </div>
+  <%= link_to "New Role", new_admin_role_path, class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+</div>
+
+<% if @roles.any? %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @roles.each do |role| %>
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900"><%= role.title %></div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <% if role.remote? %>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Remote</span>
+              <% end %>
+              <% if role.location.present? %>
+                <%= role.location %>
+              <% elsif !role.remote? %>
+                <span class="text-gray-400">—</span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= role.salary_range || "—" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <%= render "status_badge", role: role %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+              <div class="flex items-center justify-end space-x-3">
+                <%= render "transition_buttons", role: role %>
+                <%= link_to "View", admin_role_path(role), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+                <%= link_to "Edit", edit_admin_role_path(role), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-12 text-center">
+    <h3 class="text-sm font-medium text-gray-900">No roles yet</h3>
+    <p class="mt-1 text-sm text-gray-500">Get started by creating your first role.</p>
+    <div class="mt-6">
+      <%= link_to "New Role", new_admin_role_path, class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,45 @@
+<div class="px-4 sm:px-6 lg:px-8 py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+      <%= link_to "← Back", admin_application_path(@interview.application), class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+    </div>
+
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Scorecard</h1>
+    <p class="text-sm text-gray-500 mb-6">
+      By <%= @scorecard.user.full_name %> · <%= @interview.interview_phase.name %> · <%= @interview.application.candidate.full_name %>
+    </p>
+
+    <div class="bg-white rounded-lg border border-gray-200 px-6 py-6 space-y-6">
+      <% if @scorecard.scorecard_categories.any? %>
+        <div>
+          <h3 class="text-sm font-medium text-gray-900 mb-3">Ratings</h3>
+          <div class="space-y-2">
+            <% @scorecard.scorecard_categories.each do |cat| %>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-700"><%= cat.name %></span>
+                <div class="flex items-center gap-1">
+                  <% (1..5).each do |n| %>
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium
+                      <%= n <= cat.rating ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-400' %>">
+                      <%= n %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <% if @scorecard.average_rating %>
+            <p class="text-sm font-medium text-gray-900 mt-3">Average: <%= @scorecard.average_rating %>/5</p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @scorecard.notes.present? %>
+        <div>
+          <h3 class="text-sm font-medium text-gray-900 mb-2">Notes</h3>
+          <div class="text-sm text-gray-700 whitespace-pre-wrap"><%= @scorecard.notes %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

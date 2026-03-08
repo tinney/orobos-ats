@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <title><%= content_for(:title) || "Preview — #{@company&.name}" %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag :app %>
+  <%= javascript_importmap_tags %>
+</head>
+<body class="h-full bg-gray-50">
+  <%# Preview banner %>
+  <div class="bg-yellow-50 border-b border-yellow-200">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        <span class="text-sm font-medium text-yellow-800">Preview Mode</span>
+        <span class="text-sm text-yellow-600">— This role is not yet published</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <%= yield %>
+  </main>
+</body>
+</html>

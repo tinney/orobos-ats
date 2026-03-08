@@ -1,0 +1,150 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to #{@role.title}", job_path(slug: @role.slug), class: "text-sm text-blue-600 hover:text-blue-800" %>
+  </div>
+
+  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div class="px-4 sm:px-6 py-6 border-b border-gray-200">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Apply for <%= @role.title %></h1>
+      <p class="text-sm text-gray-500 mt-1"><%= current_company.name %></p>
+    </div>
+
+    <div class="px-4 sm:px-6 py-6">
+      <% if flash[:alert] %>
+        <div class="mb-6 rounded-md bg-red-50 p-4 border border-red-200">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">There was a problem with your submission</h3>
+              <div class="mt-1 text-sm text-red-700">
+                <p><%= flash[:alert] %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with url: job_application_path(slug: @role.slug), method: :post, local: true, multipart: true,
+          data: { controller: "application-form", "application-form-target": "form", action: "submit->application-form#submit" } do |f| %>
+        <%# Honeypot field - hidden from humans, bots fill it %>
+        <div style="position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
+          <%= f.label :website, "Website" %>
+          <%= f.text_field :website, name: "application[website]", tabindex: "-1", autocomplete: "off" %>
+        </div>
+
+        <%# Hidden timestamp for bot timing detection %>
+        <%= f.hidden_field :form_loaded_at, name: "application[form_loaded_at]", value: Time.current.iso8601, data: { "application-form-target": "timestamp" } %>
+
+        <div class="space-y-6">
+          <%# Name fields %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div data-field-wrapper>
+              <%= f.label :first_name, "First Name *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= f.text_field :first_name, name: "application[first_name]", required: true,
+                  placeholder: "Jane",
+                  class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                  value: params.dig(:application, :first_name) %>
+            </div>
+            <div data-field-wrapper>
+              <%= f.label :last_name, "Last Name *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= f.text_field :last_name, name: "application[last_name]", required: true,
+                  placeholder: "Doe",
+                  class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                  value: params.dig(:application, :last_name) %>
+            </div>
+          </div>
+
+          <%# Email %>
+          <div data-field-wrapper>
+            <%= f.label :email, "Email Address *", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.email_field :email, name: "application[email]", required: true,
+                placeholder: "jane@example.com",
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                value: params.dig(:application, :email) %>
+          </div>
+
+          <%# Phone %>
+          <div data-field-wrapper>
+            <%= f.label :phone, "Phone (optional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.telephone_field :phone, name: "application[phone]",
+                placeholder: "(555) 123-4567",
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                value: params.dig(:application, :phone) %>
+          </div>
+
+          <%# Resume upload with Stimulus file validation %>
+          <div data-field-wrapper>
+            <%= f.label :resume, class: "block text-sm font-medium text-gray-700 mb-1" do %>
+              Resume <span class="font-normal text-gray-500">(PDF or Word, max 10MB)</span>
+            <% end %>
+            <%= f.file_field :resume, name: "application[resume]",
+                accept: ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer",
+                data: { "application-form-target": "fileInput", action: "change->application-form#validateFile" } %>
+            <p class="mt-1 text-xs text-gray-500">Accepted formats: .pdf, .doc, .docx</p>
+            <div data-application-form-target="fileInfo" class="hidden"></div>
+            <p data-application-form-target="fileError" class="hidden mt-2 text-sm text-red-600"></p>
+          </div>
+
+          <%# Cover letter %>
+          <div data-field-wrapper>
+            <%= f.label :cover_letter, "Cover Letter (optional)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= f.text_area :cover_letter, name: "application[cover_letter]", rows: 6,
+                placeholder: "Tell us why you're interested in this role...",
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                value: params.dig(:application, :cover_letter) %>
+          </div>
+
+          <%# Custom questions %>
+          <% if @custom_questions.any? %>
+            <div class="border-t border-gray-200 pt-6">
+              <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Additional Questions</h2>
+
+              <div class="space-y-5">
+                <% @custom_questions.each do |question| %>
+                  <div data-field-wrapper>
+                    <%= label_tag "application_custom_answers_custom_question_#{question.id}",
+                        "#{question.label}#{question.required? ? ' *' : ''}",
+                        class: "block text-sm font-medium text-gray-700 mb-1" %>
+
+                    <% case question.field_type %>
+                    <% when "text" %>
+                      <%= text_field_tag "application[custom_answers][custom_question_#{question.id}]",
+                          params.dig(:application, :custom_answers, "custom_question_#{question.id}"),
+                          required: question.required?,
+                          class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                    <% when "textarea" %>
+                      <%= text_area_tag "application[custom_answers][custom_question_#{question.id}]",
+                          params.dig(:application, :custom_answers, "custom_question_#{question.id}"),
+                          required: question.required?, rows: 4,
+                          class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                    <% when "select" %>
+                      <%= select_tag "application[custom_answers][custom_question_#{question.id}]",
+                          options_for_select([["Select...", ""]] + question.options.map { |o| [o, o] },
+                          params.dig(:application, :custom_answers, "custom_question_#{question.id}")),
+                          required: question.required?,
+                          class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <%# Submit button %>
+          <div class="pt-4 border-t border-gray-200">
+            <p class="text-xs text-gray-500 mb-4">By submitting this application, you agree to have your information reviewed by the hiring team at <%= current_company.name %>.</p>
+            <%= f.submit "Submit Application",
+                class: "w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity",
+                style: "background-color: #{current_company.primary_color || '#4F46E5'};",
+                data: { "application-form-target": "submitButton" } %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

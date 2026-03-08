@@ -1,0 +1,165 @@
+<% content_for(:title, "Team Members — Admin") %>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Team Members</h1>
+    <p class="mt-1 text-sm text-gray-500">Manage your organization's team and roles.</p>
+  </div>
+  <%= link_to new_admin_user_path, class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" do %>
+    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Add Team Member
+  <% end %>
+</div>
+
+<%# Active Users %>
+<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden mb-8">
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <h2 class="text-sm font-semibold text-gray-700">Active Members (<%= @active_users.count %>)</h2>
+  </div>
+  <% if @active_users.any? %>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @active_users.each do |user| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-xs font-medium text-gray-600"><%= user.first_name[0] %><%= user.last_name[0] %></span>
+                </div>
+                <div class="ml-3">
+                  <div class="text-sm font-medium text-gray-900">
+                    <%= user.full_name %>
+                    <% if user == current_user %>
+                      <span class="ml-1 text-xs text-gray-400">(you)</span>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.email %></td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <%= render "role_badge", user: user %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <svg class="mr-1 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                Active
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+              <div class="flex items-center justify-end space-x-2">
+                <%= link_to "Edit", edit_admin_user_path(user), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+
+                <% unless user == current_user %>
+                  <span class="text-gray-300">|</span>
+
+                  <% unless user.role == "admin" %>
+                    <%= button_to promote_admin_user_path(user), method: :patch, form: {
+                      class: "inline",
+                      data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Promote #{user.full_name} to #{user.role == 'interviewer' ? 'Hiring Manager' : 'Admin'}?" }
+                    } do %>
+                      <span class="text-green-600 hover:text-green-800 font-medium cursor-pointer">↑ Promote</span>
+                    <% end %>
+                  <% end %>
+
+                  <% unless user.role == "interviewer" %>
+                    <%= button_to demote_admin_user_path(user), method: :patch, form: {
+                      class: "inline",
+                      data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Demote #{user.full_name} to #{user.role == 'admin' ? 'Hiring Manager' : 'Interviewer'}?" }
+                    } do %>
+                      <span class="text-yellow-600 hover:text-yellow-800 font-medium cursor-pointer">↓ Demote</span>
+                    <% end %>
+                  <% end %>
+
+                  <span class="text-gray-300">|</span>
+
+                  <%= button_to deactivate_admin_user_path(user), method: :patch, form: {
+                    class: "inline",
+                    data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Are you sure you want to deactivate #{user.full_name}? They will no longer be able to log in." }
+                  } do %>
+                    <span class="text-red-600 hover:text-red-800 font-medium cursor-pointer">Deactivate</span>
+                  <% end %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="p-12 text-center">
+      <h3 class="text-sm font-medium text-gray-900">No active team members</h3>
+      <p class="mt-1 text-sm text-gray-500">Add your first team member to get started.</p>
+    </div>
+  <% end %>
+</div>
+
+<%# Deactivated Users %>
+<% if @deactivated_users.any? %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden" data-controller="toggle" data-toggle-target-value="deactivated-table">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-gray-700">Deactivated (<%= @deactivated_users.count %>)</h2>
+      <button type="button" data-action="click->toggle#toggle" class="text-xs text-gray-500 hover:text-gray-700 font-medium">
+        Show / Hide
+      </button>
+    </div>
+    <div id="deactivated-table">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @deactivated_users.each do |user| %>
+            <tr class="bg-gray-50/50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <span class="text-xs font-medium text-gray-400"><%= user.first_name[0] %><%= user.last_name[0] %></span>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-500"><%= user.full_name %></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"><%= user.email %></td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  <%= user.role.titleize %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                  <svg class="mr-1 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                  Deactivated
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <%= button_to reactivate_admin_user_path(user), method: :patch, form: {
+                  class: "inline",
+                  data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Reactivate #{user.full_name}? They will be able to log in again." }
+                } do %>
+                  <span class="text-green-600 hover:text-green-800 font-medium cursor-pointer">Reactivate</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>
