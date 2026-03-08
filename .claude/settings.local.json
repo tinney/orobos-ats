@@ -3,7 +3,8 @@
     "allow": [
       "mcp__plugin_ouroboros_ouroboros__ouroboros_interview",
       "mcp__plugin_ouroboros_ouroboros__ouroboros_generate_seed",
-      "mcp__plugin_ouroboros_ouroboros__ouroboros_execute_seed"
+      "mcp__plugin_ouroboros_ouroboros__ouroboros_execute_seed",
+      "Bash(bin/rails test:*)"
     ]
   }
 }
