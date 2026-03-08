@@ -161,8 +161,9 @@ class RoleStatusTransitionTest < ActiveSupport::TestCase
 
   test "close! records transition with user" do
     assign_phase_owner(@role)
+    @role = Role.find(@role.id)
+    ActsAsTenant.current_tenant = @role.company
     @role.publish!
-    @role.reload
     @role.close!(user: @owner)
     transition = @role.status_transitions.last
     assert_equal "published", transition.from_status
