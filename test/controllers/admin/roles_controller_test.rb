@@ -706,6 +706,167 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # ==========================================
+  # Destroy
+  # ==========================================
+
+  test "admin can destroy a role" do
+    sign_in(@admin)
+
+    assert_difference -> { ActsAsTenant.with_tenant(@company) { Role.count } }, -1 do
+      delete admin_role_path(@role)
+    end
+
+    assert_redirected_to admin_roles_path
+    assert_match "Software Engineer", flash[:notice]
+    assert_match "deleted", flash[:notice]
+  end
+
+  test "hiring manager cannot destroy a role" do
+    sign_in(@hiring_manager)
+
+    assert_no_difference -> { ActsAsTenant.with_tenant(@company) { Role.count } } do
+      delete admin_role_path(@role)
+    end
+
+    assert_redirected_to tenant_root_path
+    assert_equal "You are not authorized to access this page.", flash[:alert]
+  end
+
+  test "interviewer cannot destroy a role" do
+    sign_in(@interviewer)
+
+    assert_no_difference -> { ActsAsTenant.with_tenant(@company) { Role.count } } do
+      delete admin_role_path(@role)
+    end
+
+    assert_redirected_to tenant_root_path
+  end
+
+  test "cannot destroy a role from another tenant" do
+    other_company = Company.create!(name: "Other Corp", subdomain: "othercorp")
+    other_role = ActsAsTenant.with_tenant(other_company) do
+      Role.create!(company: other_company, title: "Secret Role", status: "draft")
+    end
+
+    sign_in(@admin)
+    delete admin_role_path(other_role)
+    assert_response :not_found
+  end
+
+  test "destroy removes associated interview phases" do
+    sign_in(@admin)
+    phase_count = ActsAsTenant.with_tenant(@company) { @role.interview_phases.count }
+    assert phase_count > 0, "Role should have default phases"
+
+    assert_difference -> { ActsAsTenant.with_tenant(@company) { InterviewPhase.count } }, -phase_count do
+      delete admin_role_path(@role)
+    end
+  end
+
+  # ==========================================
+  # Hiring Manager Assignment
+  # ==========================================
+
+  test "create role with hiring manager assignment" do
+    sign_in(@admin)
+
+    post admin_roles_path, params: {
+      role: {
+        title: "QA Engineer",
+        status: "draft",
+        hiring_manager_id: @hiring_manager.id
+      }
+    }
+
+    assert_redirected_to admin_roles_path
+    new_role = ActsAsTenant.with_tenant(@company) { Role.find_by(title: "QA Engineer") }
+    assert_equal @hiring_manager.id, new_role.hiring_manager_id
+  end
+
+  test "update role hiring manager" do
+    sign_in(@admin)
+
+    patch admin_role_path(@role), params: {
+      role: { hiring_manager_id: @hiring_manager.id }
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    @role.reload
+    assert_equal @hiring_manager.id, @role.hiring_manager_id
+  end
+
+  test "clear role hiring manager" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(hiring_manager: @hiring_manager) }
+
+    patch admin_role_path(@role), params: {
+      role: { hiring_manager_id: "" }
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    @role.reload
+    assert_nil @role.hiring_manager_id
+  end
+
+  test "show page displays hiring manager" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(hiring_manager: @hiring_manager) }
+
+    get admin_role_path(@role)
+    assert_response :success
+    assert_match "Harry Manager", response.body
+    assert_match "Hiring Manager", response.body
+  end
+
+  test "form has hiring manager select field" do
+    sign_in(@admin)
+    get new_admin_role_path
+    assert_response :success
+    assert_select "select[name='role[hiring_manager_id]']"
+  end
+
+  test "edit form has hiring manager select field" do
+    sign_in(@admin)
+    get edit_admin_role_path(@role)
+    assert_response :success
+    assert_select "select[name='role[hiring_manager_id]']"
+  end
+
+  test "hiring manager can assign hiring manager to role" do
+    sign_in(@hiring_manager)
+
+    patch admin_role_path(@role), params: {
+      role: { hiring_manager_id: @hiring_manager.id }
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    @role.reload
+    assert_equal @hiring_manager.id, @role.hiring_manager_id
+  end
+
+  # ==========================================
+  # Strong parameter filtering
+  # ==========================================
+
+  test "unpermitted parameters are ignored" do
+    sign_in(@admin)
+
+    post admin_roles_path, params: {
+      role: {
+        title: "Test Role",
+        status: "draft",
+        company_id: "00000000-0000-0000-0000-000000000000",
+        slug: "hacked-slug"
+      }
+    }
+
+    assert_redirected_to admin_roles_path
+    new_role = ActsAsTenant.with_tenant(@company) { Role.find_by(title: "Test Role") }
+    assert_equal @company.id, new_role.company_id
+    assert_not_equal "hacked-slug", new_role.slug
+  end
+
   private
 
   def assign_phase_owner_to(role)
