@@ -52,6 +52,11 @@ Rails.application.routes.draw do
         resources :offers, only: %i[create edit update]
       end
 
+      # Tenant settings (branding, logo, color)
+      resource :settings, only: %i[edit update], controller: "settings" do
+        delete :destroy_logo, on: :member
+      end
+
       # Timezone auto-detection update
       resource :timezone, only: :update
 

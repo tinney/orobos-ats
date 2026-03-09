@@ -204,4 +204,46 @@ class RateLimitTest < ActiveSupport::TestCase
     assert RateLimit.exceeded?("apply:1.1.1.1")
     assert_not RateLimit.exceeded?("apply:2.2.2.2")
   end
+
+  # ==========================================
+  # Email-based rate limiting for magic links
+  # ==========================================
+
+  test "threshold_for returns configured limit for magic_link_email action" do
+    config = RateLimit.threshold_for("magic_link_email:user@example.com")
+    assert_equal 3, config[:limit]
+    assert_equal 15.minutes, config[:window]
+  end
+
+  test "simulates email rate limiting for magic link requests" do
+    email = "target@example.com"
+    key = "magic_link_email:#{email}"
+
+    3.times { RateLimit.increment!(key) }
+
+    assert RateLimit.exceeded?(key)
+  end
+
+  test "different emails have independent rate limits" do
+    3.times { RateLimit.increment!("magic_link_email:user1@example.com") }
+
+    assert RateLimit.exceeded?("magic_link_email:user1@example.com")
+    assert_not RateLimit.exceeded?("magic_link_email:user2@example.com")
+  end
+
+  test "IP and email rate limits are independent" do
+    ip_key = "magic_link:1.2.3.4"
+    email_key = "magic_link_email:user@example.com"
+
+    # IP hits its limit (5)
+    5.times { RateLimit.increment!(ip_key) }
+    assert RateLimit.exceeded?(ip_key)
+
+    # Email is still under its limit
+    assert_not RateLimit.exceeded?(email_key)
+
+    # Email hits its limit (3)
+    3.times { RateLimit.increment!(email_key) }
+    assert RateLimit.exceeded?(email_key)
+  end
 end

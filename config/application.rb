@@ -45,6 +45,10 @@ module Ouroboros
     # setting env['tenant.subdomain'] and env['tenant.request_type'].
     config.middleware.insert_before ActionDispatch::Cookies, Middleware::SubdomainRouter
 
+    # Rate limiting middleware — blocks abusive requests before they reach controllers.
+    # Configured in config/initializers/rack_attack.rb.
+    config.middleware.use Rack::Attack
+
     # Use UUIDs as primary keys by default
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid

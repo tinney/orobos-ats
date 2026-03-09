@@ -4,6 +4,14 @@ class Company < ApplicationRecord
   has_one_attached :logo
 
   validates :name, presence: true
+  validates :primary_color, format: {
+    with: /\A#[0-9A-Fa-f]{6}\z/,
+    message: "must be a valid hex color (e.g. #4F46E5)",
+    allow_blank: true
+  }
+  validate :logo_content_type_valid, if: -> { logo.attached? }
+  validate :logo_size_valid, if: -> { logo.attached? }
+
   validates :subdomain, presence: true,
     uniqueness: {case_sensitive: false},
     length: {minimum: 3, maximum: 63},
@@ -25,6 +33,18 @@ class Company < ApplicationRecord
   before_validation :normalize_subdomain
 
   private
+
+  def logo_content_type_valid
+    unless logo.content_type.in?(%w[image/png image/jpeg image/gif image/svg+xml])
+      errors.add(:logo, "must be a PNG, JPEG, GIF, or SVG image")
+    end
+  end
+
+  def logo_size_valid
+    if logo.byte_size > 5.megabytes
+      errors.add(:logo, "must be less than 5MB")
+    end
+  end
 
   def normalize_subdomain
     self.subdomain = subdomain.to_s.strip.downcase

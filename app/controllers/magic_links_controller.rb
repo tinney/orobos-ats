@@ -2,6 +2,11 @@
 
 # Handles magic link login requests within a tenant subdomain.
 # Presents the login form and processes magic link email delivery.
+#
+# Rate limiting is enforced at two layers:
+# 1. Rack::Attack middleware — throttles by IP and by email at the Rack level
+# 2. Application-level RateLimit model — provides DB-backed counting as a
+#    secondary defense (e.g., if cache store is cleared)
 class MagicLinksController < ApplicationController
   layout "public"
 
@@ -26,7 +31,9 @@ class MagicLinksController < ApplicationController
       return
     end
 
+    # Track request counts in the DB for both IP and email
     RateLimit.increment!("magic_link:#{request.remote_ip}")
+    RateLimit.increment!("magic_link_email:#{email}")
 
     user = current_company.users.active.find_by(email: email)
 
@@ -45,8 +52,15 @@ class MagicLinksController < ApplicationController
     redirect_to admin_dashboard_path if current_user
   end
 
+  # Application-level rate limit check — secondary to Rack::Attack middleware.
+  # Checks both per-IP and per-email thresholds.
   def check_rate_limit
-    if RateLimit.exceeded?("magic_link:#{request.remote_ip}", limit: 5)
+    ip_exceeded = RateLimit.exceeded?("magic_link:#{request.remote_ip}", limit: 5)
+
+    email = params[:email].to_s.strip.downcase
+    email_exceeded = email.present? && RateLimit.exceeded?("magic_link_email:#{email}", limit: 3)
+
+    if ip_exceeded || email_exceeded
       redirect_to login_path, alert: "Too many requests. Please try again later."
     end
   end

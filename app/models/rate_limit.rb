@@ -4,7 +4,8 @@ class RateLimit < ApplicationRecord
   # Configurable thresholds per action type
   THRESHOLDS = {
     "apply" => {limit: 10, window: 1.hour},
-    "magic_link" => {limit: 5, window: 15.minutes}
+    "magic_link" => {limit: 5, window: 15.minutes},
+    "magic_link_email" => {limit: 3, window: 15.minutes}
   }.freeze
 
   DEFAULT_THRESHOLD = {limit: 10, window: 1.hour}.freeze

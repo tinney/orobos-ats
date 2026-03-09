@@ -1,4 +1,4 @@
-<%= form_with(model: [:admin, user], class: "space-y-6", data: { controller: "form-submit", action: "submit->form-submit#disable" }) do |f| %>
+<%= form_with(model: [:admin, user], class: "space-y-6", data: { controller: "form-submit user-form", action: "submit->form-submit#disable" }) do |f| %>
   <% if user.errors.any? %>
     <div class="p-4 bg-red-50 border border-red-200 rounded-md">
       <h3 class="text-sm font-medium text-red-800">
@@ -16,7 +16,7 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <%= f.label :first_name, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.text_field :first_name, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", required: true, placeholder: "Jane" %>
+        <%= f.text_field :first_name, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", required: true, placeholder: "Jane", autofocus: user.new_record? %>
       </div>
 
       <div>
@@ -34,15 +34,19 @@
     <% if user.new_record? %>
       <div>
         <%= f.label :role, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.select :role, User::ROLES.map { |r| [r.titleize, r] }, {}, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
-        <div class="mt-2 space-y-1">
-          <p class="text-xs text-gray-400">
+        <%= f.select :role,
+              User::ROLES.map { |r| [r.titleize, r] },
+              {},
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+              data: { user_form_target: "roleSelect", action: "change->user-form#roleChanged" } %>
+        <div class="mt-2 space-y-1 transition-all duration-150">
+          <p class="text-xs text-gray-400 transition-opacity duration-150" data-user-form-target="roleDescription" data-role="admin">
             <span class="font-medium text-purple-600">★ Admin</span> — Full access: manage team, roles, and all settings
           </p>
-          <p class="text-xs text-gray-400">
+          <p class="text-xs text-gray-400 transition-opacity duration-150" data-user-form-target="roleDescription" data-role="hiring_manager">
             <span class="font-medium text-blue-600">◆ Hiring Manager</span> — Manage roles, candidates, and view all feedback
           </p>
-          <p class="text-xs text-gray-400">
+          <p class="text-xs text-gray-400 transition-opacity duration-150" data-user-form-target="roleDescription" data-role="interviewer">
             <span class="font-medium text-gray-600">● Interviewer</span> — Submit scorecards and view assigned interviews only
           </p>
         </div>

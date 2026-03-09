@@ -1,11 +1,10 @@
 Sign in to your account
+=======================
 
 Hi <%= @user.first_name %>,
 
-Use this link to sign in:
+Use the link below to sign in. It will expire in <%= @expiry_minutes %> minutes and can only be used once.
 
 <%= @magic_link_url %>
 
-This link will expire in <%= @expiry_minutes %> minutes and can only be used once.
-
-If you didn't request this link, you can safely ignore this email.
+If you didn't request this link, you can safely ignore this email. Your account is secure.

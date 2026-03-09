@@ -1,0 +1,125 @@
+<% content_for(:title, "Settings — #{current_company.name}") %>
+
+<div class="max-w-2xl">
+  <h1 class="text-2xl font-bold text-gray-900 mb-1">Company Settings</h1>
+  <p class="text-sm text-gray-500 mb-8">Manage your company branding and display preferences.</p>
+
+  <%= form_with model: @company, url: admin_settings_path, method: :patch, class: "space-y-8" do |f| %>
+    <% if @company.errors.any? %>
+      <div class="rounded-md bg-red-50 p-4">
+        <div class="text-sm text-red-800">
+          <p class="font-medium mb-1">Please fix the following errors:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <% @company.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Company Name %>
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">General</h2>
+      <div>
+        <%= f.label :name, "Company Name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :name,
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+              required: true %>
+      </div>
+    </div>
+
+    <%# Logo Upload %>
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Logo</h2>
+      <p class="text-sm text-gray-500 mb-4">Your logo appears on public careers pages and job listings. Recommended size: 200×200px. PNG or JPG formats.</p>
+
+      <% if @company.logo.attached? %>
+        <div class="mb-4 flex items-center space-x-4">
+          <div class="h-20 w-20 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center bg-white">
+            <%= image_tag @company.logo, class: "max-h-full max-w-full object-contain" %>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600"><%= @company.logo.filename %></p>
+            <p class="text-xs text-gray-400"><%= number_to_human_size(@company.logo.byte_size) %></p>
+            <%= button_to "Remove logo", destroy_logo_admin_settings_path, method: :delete,
+                  class: "mt-1 text-sm text-red-600 hover:text-red-800 font-medium",
+                  data: { confirm: "Are you sure you want to remove the logo?" } %>
+          </div>
+        </div>
+      <% end %>
+
+      <div data-controller="logo-preview">
+        <%= f.label :logo, class: "block text-sm font-medium text-gray-700 mb-1" do %>
+          <%= @company.logo.attached? ? "Replace logo" : "Upload logo" %>
+        <% end %>
+        <%= f.file_field :logo,
+              accept: "image/png,image/jpeg,image/gif,image/svg+xml",
+              class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100",
+              data: { logo_preview_target: "input", action: "change->logo-preview#preview" } %>
+        <div data-logo-preview-target="previewContainer" class="mt-3 hidden">
+          <p class="text-xs text-gray-500 mb-2">Preview:</p>
+          <div class="h-20 w-20 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center bg-white">
+            <img data-logo-preview-target="image" class="max-h-full max-w-full object-contain" src="" alt="Logo preview">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Primary Color %>
+    <div data-controller="color-preview">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Brand Color</h2>
+      <p class="text-sm text-gray-500 mb-4">This color is used on public careers pages for buttons, links, and accents.</p>
+
+      <div class="flex items-start space-x-6">
+        <div>
+          <%= f.label :primary_color, "Primary Color", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <div class="flex items-center space-x-3">
+            <%= f.color_field :primary_color,
+                  class: "h-10 w-14 rounded border border-gray-300 cursor-pointer",
+                  data: { color_preview_target: "picker", action: "input->color-preview#update" } %>
+            <%= f.text_field :primary_color,
+                  class: "block w-32 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono",
+                  pattern: "#[0-9A-Fa-f]{6}",
+                  maxlength: 7,
+                  data: { color_preview_target: "hex", action: "input->color-preview#updateFromHex" } %>
+          </div>
+        </div>
+
+        <%# Live Preview %>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-700 mb-2">Preview</p>
+          <div class="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+            <div data-color-preview-target="sampleButton"
+                 class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white"
+                 style="background-color: <%= @company.primary_color || '#4F46E5' %>;">
+              Apply Now
+            </div>
+            <div>
+              <a href="#" data-color-preview-target="sampleLink"
+                 class="text-sm font-medium"
+                 style="color: <%= @company.primary_color || '#4F46E5' %>;">
+                View Job Details →
+              </a>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div data-color-preview-target="sampleDot"
+                   class="h-3 w-3 rounded-full"
+                   style="background-color: <%= @company.primary_color || '#4F46E5' %>;"></div>
+              <span class="text-xs text-gray-500">Brand accent color</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Submit %>
+    <div class="border-t border-gray-200 pt-6">
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-gray-500">Changes will be reflected on your public careers page immediately.</p>
+        <%= f.submit "Save Settings",
+              class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer" %>
+      </div>
+    </div>
+  <% end %>
+</div>
