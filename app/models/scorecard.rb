@@ -2,7 +2,7 @@ class Scorecard < ApplicationRecord
   acts_as_tenant :company
   belongs_to :company
   belongs_to :interview
-  belongs_to :user
+  belongs_to :user, -> { unscope(where: :discarded_at) }
   has_many :scorecard_categories, dependent: :destroy
 
   accepts_nested_attributes_for :scorecard_categories, allow_destroy: true

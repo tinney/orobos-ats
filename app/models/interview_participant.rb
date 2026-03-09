@@ -2,7 +2,7 @@
 
 class InterviewParticipant < ApplicationRecord
   belongs_to :interview
-  belongs_to :user
+  belongs_to :user, -> { unscope(where: :discarded_at) }
 
   validates :user_id, uniqueness: {
     scope: :interview_id,

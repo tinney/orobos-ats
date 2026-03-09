@@ -77,6 +77,11 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "role must be one of admin, hiring_manager, interviewer" do
+    # Create a second admin so @user (admin) can have its role changed without
+    # triggering the must_retain_at_least_one_admin validation
+    User.create!(company: @company, email: "admin2@example.com",
+      first_name: "Other", last_name: "Admin", role: "admin")
+
     %w[admin hiring_manager interviewer].each do |valid_role|
       @user.role = valid_role
       assert @user.valid?, "Expected #{valid_role} to be valid"
@@ -382,6 +387,11 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "sole_admin? returns false for non-admin users" do
+    # Create a second admin so @user can be demoted without triggering
+    # the must_retain_at_least_one_admin validation
+    User.create!(company: @company, email: "admin2@example.com",
+      first_name: "Other", last_name: "Admin", role: "admin")
+
     @user.role = "hiring_manager"
     @user.save!
     assert_not @user.sole_admin?

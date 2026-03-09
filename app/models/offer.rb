@@ -2,7 +2,7 @@ class Offer < ApplicationRecord
   acts_as_tenant :company
   belongs_to :company
   belongs_to :application_submission, foreign_key: :offer_application_id, class_name: "ApplicationSubmission"
-  belongs_to :created_by, class_name: "User"
+  belongs_to :created_by, -> { unscope(where: :discarded_at) }, class_name: "User"
   has_many :offer_revisions, dependent: :destroy
 
   STATUSES = %w[pending accepted declined revoked].freeze
