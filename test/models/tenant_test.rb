@@ -66,10 +66,15 @@ class TenantTest < ActiveSupport::TestCase
     assert_includes tenant2.errors[:subdomain], "has already been taken"
   end
 
-  test "subdomain must be at least 2 characters" do
-    tenant = Tenant.new(valid_attributes.merge(subdomain: "a"))
+  test "subdomain must be at least 3 characters" do
+    tenant = Tenant.new(valid_attributes.merge(subdomain: "ab"))
     assert_not tenant.valid?
     assert tenant.errors[:subdomain].any? { |e| e.include?("too short") }
+  end
+
+  test "subdomain with exactly 3 characters is valid" do
+    tenant = Tenant.new(valid_attributes.merge(subdomain: "abc"))
+    assert tenant.valid?, tenant.errors.full_messages.join(", ")
   end
 
   test "subdomain must be at most 63 characters" do

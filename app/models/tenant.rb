@@ -13,7 +13,7 @@ class Tenant < ApplicationRecord
     uniqueness: {case_sensitive: false}
   validates :subdomain, presence: true,
     uniqueness: {case_sensitive: false},
-    length: {minimum: 2, maximum: 63},
+    length: {minimum: 3, maximum: 63},
     format: {
       with: /\A[a-z0-9]([a-z0-9-]*[a-z0-9])?\z/,
       message: "must be lowercase alphanumeric with hyphens (cannot start or end with a hyphen)"

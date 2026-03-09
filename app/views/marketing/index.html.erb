@@ -11,7 +11,9 @@
         </svg>
         <span class="text-xl font-bold text-gray-900">Ouroboros</span>
       </div>
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-6">
+        <a href="#features" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition hidden sm:inline">Features</a>
+        <a href="#pricing" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition hidden sm:inline">Pricing</a>
         <a href="<%= signup_path %>" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
           Get Started
         </a>
@@ -126,6 +128,161 @@
         <p class="mt-2 text-gray-600">
           Three tiers — Admin, Hiring Manager, Interviewer — so everyone sees exactly what they need, nothing more.
         </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# ===== PRICING SECTION ===== %>
+<section id="pricing" class="py-20 sm:py-28 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <h2 class="text-3xl sm:text-4xl font-bold text-gray-900">Simple, transparent pricing</h2>
+      <p class="mt-4 text-lg text-gray-600">Start free, upgrade when you're ready. No surprises.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <%# Free Tier %>
+      <div class="relative bg-white rounded-xl border border-gray-200 p-8 flex flex-col">
+        <h3 class="text-lg font-semibold text-gray-900">Starter</h3>
+        <div class="mt-4 flex items-baseline">
+          <span class="text-4xl font-extrabold text-gray-900">$0</span>
+          <span class="ml-1 text-lg text-gray-500">/month</span>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">Perfect for small teams just getting started with structured hiring.</p>
+        <ul class="mt-6 space-y-3 flex-1">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Up to 3 open roles</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Up to 5 team members</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Structured interviews</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Blind scorecards</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Bot detection</span>
+          </li>
+        </ul>
+        <div class="mt-8">
+          <a href="<%= signup_path %>" class="block w-full text-center px-6 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 border border-transparent rounded-lg hover:bg-indigo-100 transition">
+            Get started free
+          </a>
+        </div>
+      </div>
+
+      <%# Growth Tier (Featured) %>
+      <div class="relative bg-white rounded-xl border-2 border-indigo-600 p-8 flex flex-col shadow-lg">
+        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-indigo-600 text-white">Most Popular</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900">Growth</h3>
+        <div class="mt-4 flex items-baseline">
+          <span class="text-4xl font-extrabold text-gray-900">$49</span>
+          <span class="ml-1 text-lg text-gray-500">/month</span>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">For growing teams that need more capacity and customization.</p>
+        <ul class="mt-6 space-y-3 flex-1">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Unlimited open roles</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Up to 25 team members</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Custom application questions</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Branded careers page</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Priority support</span>
+          </li>
+        </ul>
+        <div class="mt-8">
+          <a href="<%= signup_path %>" class="block w-full text-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-700 shadow-sm transition">
+            Start free trial
+          </a>
+        </div>
+      </div>
+
+      <%# Enterprise Tier %>
+      <div class="relative bg-white rounded-xl border border-gray-200 p-8 flex flex-col">
+        <h3 class="text-lg font-semibold text-gray-900">Enterprise</h3>
+        <div class="mt-4 flex items-baseline">
+          <span class="text-4xl font-extrabold text-gray-900">Custom</span>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">For large organizations with advanced security and compliance needs.</p>
+        <ul class="mt-6 space-y-3 flex-1">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Everything in Growth</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Unlimited team members</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">SSO &amp; advanced security</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Dedicated account manager</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="ml-3 text-sm text-gray-600">Custom integrations</span>
+          </li>
+        </ul>
+        <div class="mt-8">
+          <a href="mailto:sales@ouroboros.dev" class="block w-full text-center px-6 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 border border-transparent rounded-lg hover:bg-indigo-100 transition">
+            Contact sales
+          </a>
+        </div>
       </div>
     </div>
   </div>

@@ -107,6 +107,7 @@ Rails.application.routes.draw do
   # Root-domain routes (marketing site / tenant signup, no subdomain)
   get "signup", to: "signups#new", as: :signup
   post "signup", to: "signups#create"
+  get "signup/check_subdomain", to: "signups#check_subdomain", as: :check_subdomain
   get "signup/success/:tenant_subdomain", to: "signups#success", as: :signup_success
 
   root "marketing#index"

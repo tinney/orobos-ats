@@ -1,4 +1,5 @@
 require_relative "boot"
+require_relative "../lib/middleware/subdomain_router"
 
 require "rails"
 # Pick the frameworks you want:
@@ -38,6 +39,11 @@ module Ouroboros
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Insert subdomain routing middleware early in the stack.
+    # This extracts and normalizes the subdomain before controllers run,
+    # setting env['tenant.subdomain'] and env['tenant.request_type'].
+    config.middleware.insert_before ActionDispatch::Cookies, Middleware::SubdomainRouter
 
     # Use UUIDs as primary keys by default
     config.generators do |g|

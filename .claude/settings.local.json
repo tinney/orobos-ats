@@ -12,7 +12,9 @@
       "Bash(bundle exec:*)",
       "Bash(bundle info:*)",
       "Bash(bundle update:*)",
-      "Bash(SRB_YES=1 bundle exec:*)"
+      "Bash(SRB_YES=1 bundle exec:*)",
+      "mcp__plugin_ouroboros_ouroboros__ouroboros_session_status",
+      "mcp__plugin_ouroboros_ouroboros__ouroboros_query_events"
     ]
   }
 }

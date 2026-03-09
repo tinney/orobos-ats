@@ -300,6 +300,120 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.sole_admin?
   end
 
+  # --- Magic link token management ---
+
+  test "generate_magic_link_token! returns raw token and stores digest" do
+    raw_token = @user.generate_magic_link_token!
+
+    assert raw_token.present?
+    assert_equal 43, raw_token.length # urlsafe_base64(32) produces 43 chars
+    assert @user.magic_link_token_digest.present?
+    assert @user.magic_link_token_sent_at.present?
+
+    # Digest should be SHA256 of raw token
+    expected_digest = Digest::SHA256.hexdigest(raw_token)
+    assert_equal expected_digest, @user.magic_link_token_digest
+  end
+
+  test "generate_magic_link_token! never stores raw token" do
+    raw_token = @user.generate_magic_link_token!
+
+    @user.reload
+    assert_not_equal raw_token, @user.magic_link_token_digest
+  end
+
+  test "find_by_magic_link_token returns user for valid token" do
+    raw_token = @user.generate_magic_link_token!
+
+    found_user = User.find_by_magic_link_token(raw_token)
+    assert_equal @user, found_user
+  end
+
+  test "find_by_magic_link_token returns nil for invalid token" do
+    assert_nil User.find_by_magic_link_token("bogus-token")
+  end
+
+  test "find_by_magic_link_token returns nil for blank token" do
+    assert_nil User.find_by_magic_link_token("")
+    assert_nil User.find_by_magic_link_token(nil)
+  end
+
+  test "find_by_magic_link_token returns nil for expired token" do
+    raw_token = @user.generate_magic_link_token!
+    @user.update_column(:magic_link_token_sent_at, 16.minutes.ago)
+
+    assert_nil User.find_by_magic_link_token(raw_token)
+  end
+
+  test "find_by_magic_link_token returns user for token just within expiry window" do
+    raw_token = @user.generate_magic_link_token!
+    @user.update_column(:magic_link_token_sent_at, 14.minutes.ago)
+
+    assert_equal @user, User.find_by_magic_link_token(raw_token)
+  end
+
+  test "find_by_magic_link_token returns nil for consumed token" do
+    raw_token = @user.generate_magic_link_token!
+    @user.consume_magic_link_token!
+
+    assert_nil User.find_by_magic_link_token(raw_token)
+  end
+
+  test "find_by_magic_link_token bypasses tenant scoping" do
+    other_company = Company.create!(name: "Other Corp", subdomain: "othercorp")
+    other_user = ActsAsTenant.with_tenant(other_company) do
+      User.create!(
+        company: other_company,
+        email: "other@other.com",
+        first_name: "Other",
+        last_name: "User",
+        role: "admin"
+      )
+    end
+    raw_token = ActsAsTenant.with_tenant(other_company) { other_user.generate_magic_link_token! }
+
+    # Should find user even though current tenant is @company
+    found_user = User.find_by_magic_link_token(raw_token)
+    assert_equal other_user, found_user
+  end
+
+  test "magic_link_token_valid? returns false when digest is nil" do
+    assert_not @user.magic_link_token_valid?
+  end
+
+  test "magic_link_token_valid? returns true within expiry window" do
+    @user.generate_magic_link_token!
+    assert @user.magic_link_token_valid?
+  end
+
+  test "magic_link_token_valid? returns false after expiry" do
+    @user.generate_magic_link_token!
+    @user.update_column(:magic_link_token_sent_at, 16.minutes.ago)
+    assert_not @user.magic_link_token_valid?
+  end
+
+  test "consume_magic_link_token! clears digest and sent_at" do
+    @user.generate_magic_link_token!
+    assert @user.magic_link_token_digest.present?
+
+    @user.consume_magic_link_token!
+    assert_nil @user.magic_link_token_digest
+    assert_nil @user.magic_link_token_sent_at
+  end
+
+  test "generating new token replaces previous token" do
+    first_token = @user.generate_magic_link_token!
+    first_digest = @user.magic_link_token_digest
+
+    second_token = @user.generate_magic_link_token!
+    assert_not_equal first_token, second_token
+    assert_not_equal first_digest, @user.magic_link_token_digest
+
+    # Old token should no longer work
+    assert_nil User.find_by_magic_link_token(first_token)
+    assert_equal @user, User.find_by_magic_link_token(second_token)
+  end
+
   # --- Default role ---
 
   test "default role is interviewer at database level" do

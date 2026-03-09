@@ -29,9 +29,11 @@ class ApplicationController < ActionController::Base
 
   # --- Tenant Resolution ---
 
+  # Uses the subdomain extracted by Middleware::SubdomainRouter (env['tenant.subdomain'])
+  # to look up the Company and set it as the current tenant via acts_as_tenant.
   def set_tenant_from_subdomain
-    subdomain = request.subdomain.presence&.downcase
-    return if subdomain.blank? || subdomain == "www"
+    subdomain = request.env["tenant.subdomain"] || request.subdomain.presence&.downcase
+    return if subdomain.blank? || request.env["tenant.request_type"] == :root
 
     company = Company.find_by(subdomain: subdomain)
 

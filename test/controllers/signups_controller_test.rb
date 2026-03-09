@@ -1,15 +1,17 @@
 require "test_helper"
 
 class SignupsControllerTest < ActionDispatch::IntegrationTest
-  test "GET signup renders the form" do
+  test "GET signup renders the form with Stimulus validation controller" do
     get signup_path
     assert_response :success
-    assert_select "form"
-    assert_select "input[name='signup[company_name]']"
-    assert_select "input[name='signup[subdomain]']"
-    assert_select "input[name='signup[admin_email]']"
-    assert_select "input[name='signup[admin_first_name]']"
-    assert_select "input[name='signup[admin_last_name]']"
+    assert_select "form[data-controller='signup-form']"
+    assert_select "form[data-action='submit->signup-form#validate']"
+    assert_select "input[name='signup[company_name]'][data-signup-form-target='companyName']"
+    assert_select "input[name='signup[subdomain]'][data-signup-form-target='subdomain']"
+    assert_select "input[name='signup[admin_email]'][data-signup-form-target='adminEmail']"
+    assert_select "input[name='signup[admin_first_name]'][data-signup-form-target='adminFirstName']"
+    assert_select "input[name='signup[admin_last_name]'][data-signup-form-target='adminLastName']"
+    assert_select "input[type='submit'][data-signup-form-target='submitButton']"
   end
 
   test "POST signup with valid data creates tenant and redirects" do
@@ -85,5 +87,57 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     # Root now serves marketing page; signup is at /signup
+  end
+
+  test "check_subdomain returns available for valid unused subdomain" do
+    get check_subdomain_path, params: { subdomain: "newcompany" }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert json["available"]
+    assert_match(/available/, json["message"])
+  end
+
+  test "check_subdomain returns unavailable for taken subdomain" do
+    TenantSignupService.new(
+      company_name: "Existing",
+      subdomain: "existing",
+      admin_email: "admin@existing.com",
+      admin_first_name: "Admin",
+      admin_last_name: "User"
+    ).call
+
+    get check_subdomain_path, params: { subdomain: "existing" }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_not json["available"]
+    assert_match(/taken/, json["message"])
+  end
+
+  test "check_subdomain returns unavailable for reserved subdomain" do
+    get check_subdomain_path, params: { subdomain: "admin" }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_not json["available"]
+    assert_match(/reserved/, json["message"])
+  end
+
+  test "check_subdomain returns unavailable for too-short subdomain" do
+    get check_subdomain_path, params: { subdomain: "ab" }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_not json["available"]
+  end
+
+  test "check_subdomain returns unavailable for invalid format" do
+    get check_subdomain_path, params: { subdomain: "-bad-" }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_not json["available"]
+  end
+
+  test "signup form uses novalidate to rely on Stimulus validation" do
+    get signup_path
+    assert_response :success
+    assert_select "form[novalidate]"
   end
 end
