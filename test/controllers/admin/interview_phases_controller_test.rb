@@ -290,6 +290,64 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # Phase owner assignment via dropdown
+  # ==========================================
+
+  test "update assigns phase owner via dropdown" do
+    sign_in(@admin)
+
+    phase = @phases.first
+    patch admin_role_interview_phase_path(@role, phase), params: {
+      interview_phase: { phase_owner_id: @hiring_manager.id }
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    ActsAsTenant.with_tenant(@company) { phase.reload }
+    assert_equal @hiring_manager.id, phase.phase_owner_id
+  end
+
+  test "update clears phase owner when set to blank" do
+    sign_in(@admin)
+
+    phase = @phases.first
+    ActsAsTenant.with_tenant(@company) { phase.update!(phase_owner: @hiring_manager) }
+
+    patch admin_role_interview_phase_path(@role, phase), params: {
+      interview_phase: { phase_owner_id: "" }
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    ActsAsTenant.with_tenant(@company) { phase.reload }
+    assert_nil phase.phase_owner_id
+  end
+
+  test "role show page displays phase owner dropdown for each phase" do
+    sign_in(@admin)
+    get admin_role_path(@role)
+    assert_response :success
+    # Each phase should have a select for phase_owner_id
+    assert_select "select[name='interview_phase[phase_owner_id]']", count: @phases.length
+  end
+
+  test "phase owner dropdown includes hiring managers and admins" do
+    sign_in(@admin)
+    get admin_role_path(@role)
+    assert_response :success
+    # The dropdown should include the admin and hiring manager but not the interviewer
+    assert_match @admin.full_name, response.body
+    assert_match @hiring_manager.full_name, response.body
+  end
+
+  test "phase owner dropdown shows current owner as selected" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @phases.first.update!(phase_owner: @hiring_manager) }
+
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "select[name='interview_phase[phase_owner_id]'] option[selected][value='#{@hiring_manager.id}']"
+  end
+
+  # ==========================================
   # Role show page displays phases
   # ==========================================
 
