@@ -10,7 +10,7 @@ while true; do
     echo "Changes detected"
     git add -A;
     git ci -m "Adding Ooroboros changes... Iteraetion $i"
-    git git push
+    git push
 
     # Commands to run when there are changes
     git status

@@ -6,27 +6,24 @@ module Admin
   class SettingsControllerTest < ActionDispatch::IntegrationTest
     setup do
       @company = Company.create!(name: "Acme Corp", subdomain: "acme", primary_color: "#E11D48")
-      @admin = User.create!(
-        email: "admin@acme.com",
-        first_name: "Admin",
-        last_name: "User",
-        role: "admin",
-        company: @company
-      )
-      @interviewer = User.create!(
-        email: "interviewer@acme.com",
-        first_name: "Int",
-        last_name: "Viewer",
-        role: "interviewer",
-        company: @company
-      )
+      ActsAsTenant.with_tenant(@company) do
+        @admin = User.create!(
+          email: "admin@acme.com",
+          first_name: "Admin",
+          last_name: "User",
+          role: "admin",
+          company: @company
+        )
+        @interviewer = User.create!(
+          email: "interviewer@acme.com",
+          first_name: "Int",
+          last_name: "Viewer",
+          role: "interviewer",
+          company: @company
+        )
+      end
 
-      ActsAsTenant.current_tenant = @company
       host! "acme.example.com"
-    end
-
-    teardown do
-      ActsAsTenant.current_tenant = nil
     end
 
     # ── Authentication & Authorization ──
