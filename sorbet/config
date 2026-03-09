@@ -1,0 +1,7 @@
+--dir
+.
+--ignore=/vendor
+--ignore=/sorbet/rbi
+--ignore=/tmp
+--ignore=/log
+--ignore=/db/migrate

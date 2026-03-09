@@ -48,8 +48,12 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
-  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-  gem "rubocop-rails-omakase", require: false
+  # StandardRB for Ruby linting [https://github.com/standardrb/standard]
+  gem "standard", ">= 1.35.1", require: false
+
+  # Sorbet for type checking [https://sorbet.org/]
+  gem "sorbet", require: false
+  gem "tapioca", require: false
 end
 
 group :development do
@@ -61,3 +65,6 @@ group :development do
 end
 
 gem "stimulus-rails", "~> 1.3"
+
+# Sorbet runtime for type annotations [https://sorbet.org/]
+gem "sorbet-runtime"
