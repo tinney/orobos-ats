@@ -95,6 +95,10 @@ module Admin
       @role = Role.find(params[:id])
     end
 
+    def load_hiring_managers
+      @hiring_managers = User.active.where(role: %w[admin hiring_manager]).order(:first_name, :last_name)
+    end
+
     def role_params
       params.require(:role).permit(:title, :location, :remote, :salary_min, :salary_max, :salary_currency, :status, :description, :hiring_manager_id)
     end

@@ -1,4 +1,7 @@
-<%= form_with(model: [:admin, role], class: "space-y-6", data: { controller: "role-form" }) do |f| %>
+<%= form_with(model: [:admin, role], class: "space-y-6", data: {
+  controller: "role-form",
+  action: "submit->role-form#validateBeforeSubmit"
+}) do |f| %>
   <% if role.errors.any? %>
     <div class="p-4 bg-red-50 border border-red-200 rounded-md">
       <h3 class="text-sm font-medium text-red-800">
@@ -12,61 +15,96 @@
     </div>
   <% end %>
 
-  <%# Title %>
-  <div>
-    <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. Senior Software Engineer", required: true %>
-  </div>
+  <%# === Basic Information Section === %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
+    <h3 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">Basic Information</h3>
 
-  <%# Status %>
-  <div>
-    <%= f.label :status, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :status, Role::STATUSES.map { |s| [s.titleize, s] }, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
-    <p class="mt-1 text-xs text-gray-500">Only published roles are visible on the public careers page.</p>
-  </div>
-
-  <%# Location + Remote %>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <%# Title %>
     <div>
-      <%= f.label :location, class: "block text-sm font-medium text-gray-700" %>
-      <%= f.text_field :location, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. San Francisco, CA", data: { role_form_target: "locationField" } %>
+      <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :title, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. Senior Software Engineer", required: true, autofocus: role.new_record? %>
     </div>
 
-    <div class="flex items-center pt-6">
-      <%= f.check_box :remote, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500", data: { role_form_target: "remoteCheckbox", action: "change->role-form#toggleRemote" } %>
-      <%= f.label :remote, "Remote position", class: "ml-2 text-sm text-gray-700" %>
+    <%# Status + Hiring Manager %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <%= f.label :status, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.select :status, Role::STATUSES.map { |s| [s.titleize, s] }, {}, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+        <p class="mt-1 text-xs text-gray-500">Only published roles are visible on the public careers page.</p>
+      </div>
+
+      <div>
+        <%= f.label :hiring_manager_id, "Hiring Manager", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.select :hiring_manager_id,
+              options_from_collection_for_select(@hiring_managers, :id, :full_name, role.hiring_manager_id),
+              { include_blank: "— Select a hiring manager —" },
+              class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+        <p class="mt-1 text-xs text-gray-500">The hiring manager responsible for this role.</p>
+      </div>
+    </div>
+
+    <%# Location + Remote %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <%= f.label :location, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :location, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. San Francisco, CA", data: { role_form_target: "locationField" } %>
+      </div>
+
+      <div class="flex items-center pt-6">
+        <%= f.check_box :remote, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500", data: { role_form_target: "remoteCheckbox", action: "change->role-form#toggleRemote" } %>
+        <%= f.label :remote, "Remote position", class: "ml-2 text-sm text-gray-700" %>
+      </div>
     </div>
   </div>
 
-  <%# Salary Range %>
-  <fieldset>
-    <legend class="block text-sm font-medium text-gray-700 mb-1">Salary Range <span class="font-normal text-gray-400">(optional)</span></legend>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <%= f.label :salary_currency, "Currency", class: "block text-xs font-medium text-gray-500" %>
-        <%= f.select :salary_currency, [["USD", "USD"], ["EUR", "EUR"], ["GBP", "GBP"], ["CAD", "CAD"], ["AUD", "AUD"]], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
-      </div>
-      <div>
-        <%= f.label :salary_min, "Minimum", class: "block text-xs font-medium text-gray-500" %>
-        <%= f.number_field :salary_min, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 80000", min: 0, step: 1000 %>
-      </div>
-      <div>
-        <%= f.label :salary_max, "Maximum", class: "block text-xs font-medium text-gray-500" %>
-        <%= f.number_field :salary_max, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 120000", min: 0, step: 1000 %>
-      </div>
-    </div>
-  </fieldset>
+  <%# === Compensation Section === %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
+    <h3 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">Compensation <span class="text-sm font-normal text-gray-400">(optional)</span></h3>
 
-  <%# Description with Trix/ActionText %>
-  <div>
-    <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <p class="text-xs text-gray-500 mb-2">Describe the role responsibilities, requirements, and benefits. This will be shown on the public careers page.</p>
-    <%= f.rich_text_area :description, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[200px]" %>
+    <fieldset>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <%= f.label :salary_currency, "Currency", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.select :salary_currency, [["USD ($)", "USD"], ["EUR (\u20AC)", "EUR"], ["GBP (\u00A3)", "GBP"], ["CAD (C$)", "CAD"], ["AUD (A$)", "AUD"]], {}, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" %>
+        </div>
+        <div>
+          <%= f.label :salary_min, "Minimum", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.number_field :salary_min, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 80000", min: 0, step: 1000, data: { role_form_target: "salaryMin", action: "input->role-form#validateSalary" } %>
+        </div>
+        <div>
+          <%= f.label :salary_max, "Maximum", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.number_field :salary_max, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm", placeholder: "e.g. 120000", min: 0, step: 1000, data: { role_form_target: "salaryMax", action: "input->role-form#validateSalary" } %>
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-red-600 hidden" data-role-form-target="salaryError">Maximum salary must be greater than or equal to minimum salary.</p>
+    </fieldset>
   </div>
 
-  <%# Actions %>
-  <div class="flex items-center space-x-4 pt-4 border-t border-gray-200">
-    <%= f.submit(role.new_record? ? "Create Role" : "Update Role", class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer") %>
-    <%= link_to "Cancel", admin_roles_path, class: "text-sm text-gray-600 hover:text-gray-800" %>
+  <%# === Role Description Section (Trix/ActionText WYSIWYG) === %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-3">
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <h3 class="text-base font-semibold text-gray-900">Role Description</h3>
+      <span class="text-xs text-gray-400" data-role-form-target="wordCount"></span>
+    </div>
+
+    <p class="text-xs text-gray-500">Describe the role responsibilities, requirements, and benefits. This will be shown on the public careers page. Use the toolbar to format text, add links, and create lists.</p>
+
+    <div class="trix-editor-wrapper" data-role-form-target="editorWrapper">
+      <%= f.rich_text_area :description, data: { role_form_target: "trixEditor", action: "trix-change->role-form#updateWordCount" } %>
+    </div>
+  </div>
+
+  <%# === Actions === %>
+  <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+    <div class="flex items-center space-x-4">
+      <%= f.submit(role.new_record? ? "Create Role" : "Update Role",
+        class: "inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+        data: { role_form_target: "submitButton" }) %>
+      <%= link_to "Cancel", admin_roles_path, class: "text-sm text-gray-600 hover:text-gray-800" %>
+    </div>
+
+    <% unless role.new_record? %>
+      <p class="text-xs text-gray-400">Last updated <%= time_ago_in_words(role.updated_at) %> ago</p>
+    <% end %>
   </div>
 <% end %>

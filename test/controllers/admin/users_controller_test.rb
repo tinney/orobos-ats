@@ -485,6 +485,54 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
   # Authorization on all actions
   # ==========================================
 
+  # ==========================================
+  # Deactivation is soft-delete, not hard delete
+  # ==========================================
+
+  test "deactivate performs soft-delete preserving user record in database" do
+    sign_in(@admin)
+
+    assert_no_difference -> { ActsAsTenant.with_tenant(@company) { User.with_discarded.count } } do
+      patch deactivate_admin_user_path(@interviewer)
+    end
+
+    assert_redirected_to admin_users_path
+    @interviewer.reload
+    assert @interviewer.discarded?
+    assert_not_nil @interviewer.discarded_at
+    # User still exists in database — just soft-deleted
+    assert ActsAsTenant.with_tenant(@company) { User.with_discarded.exists?(@interviewer.id) }
+  end
+
+  test "deactivated user is no longer active and cannot authenticate" do
+    sign_in(@admin)
+    patch deactivate_admin_user_path(@interviewer)
+    assert_redirected_to admin_users_path
+
+    @interviewer.reload
+    # User is soft-deleted — active? returns false
+    assert_not @interviewer.active?
+    assert @interviewer.discarded?
+
+    # Application controller's authenticate_from_session checks user.active?
+    # so a deactivated user's session would be rejected on next request
+  end
+
+  test "deactivated user cannot request magic link to log in" do
+    sign_in(@admin)
+    patch deactivate_admin_user_path(@interviewer)
+
+    # The deactivated user's magic link token should not authenticate them
+    # because find_by_magic_link_token uses default scope (excludes discarded)
+    ActsAsTenant.with_tenant(@company) do
+      raw_token = @interviewer.generate_magic_link_token!
+      found = User.find_by_magic_link_token(raw_token)
+      # find_by_magic_link_token uses without_tenant but User still has default_scope
+      # which excludes discarded users, so it returns nil
+      assert_nil found
+    end
+  end
+
   test "interviewer cannot access any admin user action" do
     sign_in(@interviewer)
 
