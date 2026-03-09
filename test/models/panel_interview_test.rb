@@ -170,10 +170,12 @@ class PanelInterviewTest < ActiveSupport::TestCase
     end
   end
 
-  test "panel_interviews are destroyed when user is destroyed" do
+  test "user with panel_interviews cannot be hard-deleted (data preservation)" do
     @interview.add_panel_member!(@interviewer1)
-    assert_difference "PanelInterview.count", -1 do
-      @interviewer1.destroy!
+    assert_no_difference "PanelInterview.count" do
+      assert_raises(ActiveRecord::RecordNotDestroyed) do
+        @interviewer1.destroy!
+      end
     end
   end
 end

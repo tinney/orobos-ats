@@ -238,7 +238,84 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='role[salary_max]']"
     assert_select "select[name='role[salary_currency]']"
     assert_select "select[name='role[status]']"
+    assert_select "select[name='role[hiring_manager_id]']"
     assert_select "trix-editor"
+  end
+
+  test "form has hiring manager select with available managers" do
+    sign_in(@admin)
+    get new_admin_role_path
+    assert_response :success
+    assert_select "select[name='role[hiring_manager_id]']" do
+      # Should have blank option + admin + hiring_manager (not interviewer)
+      assert_select "option", minimum: 3
+      assert_select "option[value='#{@admin.id}']"
+      assert_select "option[value='#{@hiring_manager.id}']"
+    end
+    # Interviewer should not be in the hiring manager dropdown
+    assert_select "option[value='#{@interviewer.id}']", count: 0
+  end
+
+  test "form has card sections for basic info, compensation, and description" do
+    sign_in(@admin)
+    get new_admin_role_path
+    assert_response :success
+    assert_match "Basic Information", response.body
+    assert_match "Compensation", response.body
+    assert_match "Role Description", response.body
+  end
+
+  test "form has stimulus controller with salary validation targets" do
+    sign_in(@admin)
+    get new_admin_role_path
+    assert_response :success
+    assert_select "[data-role-form-target='salaryMin']"
+    assert_select "[data-role-form-target='salaryMax']"
+    assert_select "[data-role-form-target='salaryError']"
+  end
+
+  test "form has trix editor wrapper with word count target" do
+    sign_in(@admin)
+    get new_admin_role_path
+    assert_response :success
+    assert_select ".trix-editor-wrapper"
+    assert_select "[data-role-form-target='wordCount']"
+  end
+
+  test "create with hiring manager assigns the manager" do
+    sign_in(@admin)
+
+    post admin_roles_path, params: {
+      role: {
+        title: "Engineering Lead",
+        status: "draft",
+        hiring_manager_id: @hiring_manager.id
+      }
+    }
+
+    assert_redirected_to admin_roles_path
+    new_role = ActsAsTenant.with_tenant(@company) { Role.find_by(title: "Engineering Lead") }
+    assert_equal @hiring_manager.id, new_role.hiring_manager_id
+  end
+
+  test "update can change hiring manager" do
+    sign_in(@admin)
+
+    patch admin_role_path(@role), params: {
+      role: {hiring_manager_id: @hiring_manager.id}
+    }
+
+    assert_redirected_to admin_role_path(@role)
+    @role.reload
+    assert_equal @hiring_manager.id, @role.hiring_manager_id
+  end
+
+  test "edit form pre-selects current hiring manager" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(hiring_manager: @hiring_manager) }
+    get edit_admin_role_path(@role)
+    assert_response :success
+    assert_select "select[name='role[hiring_manager_id]'] option[selected][value='#{@hiring_manager.id}']"
   end
 
   # ==========================================

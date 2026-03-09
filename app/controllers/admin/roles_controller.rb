@@ -61,6 +61,7 @@ module Admin
     # Requires admin role — hiring managers cannot delete roles.
     def destroy
       authorize! :admin
+      return if performed?
       title = @role.title
       @role.destroy!
       redirect_to admin_roles_path, notice: "\"#{title}\" has been deleted."
