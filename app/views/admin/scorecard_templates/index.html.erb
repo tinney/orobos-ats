@@ -1,0 +1,77 @@
+<div class="max-w-4xl">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Scorecard Templates</h1>
+      <p class="mt-1 text-sm text-gray-500">
+        Templates for <strong><%= @interview_phase.name %></strong> phase of <strong><%= @role.title %></strong>
+      </p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <%= link_to "New Template",
+        new_admin_role_interview_phase_scorecard_template_path(@role, @interview_phase),
+        class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+    </div>
+  </div>
+
+  <% if @templates.any? %>
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categories</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @templates.each do |template| %>
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%= link_to template.name,
+                  admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, template),
+                  class: "text-sm font-medium text-blue-600 hover:text-blue-800" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= template.scorecard_template_categories.size %> categories
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                <%= template.description.presence || "—" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                <%= link_to "Edit",
+                  edit_admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, template),
+                  class: "text-blue-600 hover:text-blue-800 mr-3" %>
+                <%= button_to "Delete",
+                  admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, template),
+                  method: :delete,
+                  class: "text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer inline",
+                  form: {
+                    class: "inline",
+                    data: {
+                      controller: "confirm",
+                      confirm_message_value: "Delete template \"#{template.name}\"? This cannot be undone.",
+                      action: "submit->confirm#submit"
+                    }
+                  } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-white shadow-sm rounded-lg border border-gray-200 px-6 py-12 text-center">
+      <p class="text-sm text-gray-500">No scorecard templates defined for this phase yet.</p>
+      <p class="mt-2">
+        <%= link_to "Create the first template",
+          new_admin_role_interview_phase_scorecard_template_path(@role, @interview_phase),
+          class: "text-sm text-blue-600 hover:text-blue-800" %>
+      </p>
+    </div>
+  <% end %>
+
+  <div class="mt-6">
+    <%= link_to "&larr; Back to #{@role.title}".html_safe, admin_role_path(@role), class: "text-sm text-gray-600 hover:text-gray-800" %>
+  </div>
+</div>

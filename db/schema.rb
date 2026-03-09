@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_09_090004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -142,6 +142,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
     t.integer "phase_version", default: 1, null: false
     t.integer "position", default: 0, null: false
     t.uuid "role_id", null: false
+    t.uuid "scorecard_template_id"
     t.datetime "updated_at", null: false
     t.index ["archived_at"], name: "index_interview_phases_on_archived_at"
     t.index ["company_id"], name: "index_interview_phases_on_company_id"
@@ -149,6 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
     t.index ["role_id", "name"], name: "index_interview_phases_active_unique_name", unique: true, where: "(archived_at IS NULL)"
     t.index ["role_id", "position"], name: "index_interview_phases_on_role_id_and_position"
     t.index ["role_id"], name: "index_interview_phases_on_role_id"
+    t.index ["scorecard_template_id"], name: "index_interview_phases_on_scorecard_template_id"
   end
 
   create_table "interviews", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -291,7 +293,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
   create_table "scorecard_template_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
-    t.integer "rating_scale", default: 5, null: false
     t.uuid "scorecards_template_id", null: false
     t.integer "sort_order", default: 0, null: false
     t.datetime "updated_at", null: false
@@ -318,12 +319,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
     t.uuid "company_id", null: false
     t.datetime "created_at", null: false
     t.text "description"
-    t.uuid "interview_phase_id", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
+    t.index ["company_id", "name"], name: "index_scorecards_templates_on_company_and_name", unique: true
     t.index ["company_id"], name: "index_scorecards_templates_on_company_id"
-    t.index ["interview_phase_id", "name"], name: "index_scorecards_templates_on_phase_and_name", unique: true
-    t.index ["interview_phase_id"], name: "index_scorecards_templates_on_interview_phase_id"
   end
 
   create_table "tenants", force: :cascade do |t|
@@ -387,6 +386,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
   add_foreign_key "interview_phases", "companies"
   add_foreign_key "interview_phases", "interview_phases", column: "original_phase_id", on_delete: :nullify
   add_foreign_key "interview_phases", "roles"
+  add_foreign_key "interview_phases", "scorecards_templates", column: "scorecard_template_id", on_delete: :nullify
   add_foreign_key "interviews", "applications", on_delete: :cascade
   add_foreign_key "interviews", "companies", on_delete: :cascade
   add_foreign_key "interviews", "interview_phases", on_delete: :cascade
@@ -411,7 +411,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
   add_foreign_key "scorecards", "interviews", on_delete: :cascade
   add_foreign_key "scorecards", "users", on_delete: :restrict
   add_foreign_key "scorecards_templates", "companies"
-  add_foreign_key "scorecards_templates", "interview_phases"
   add_foreign_key "transfer_markers", "applications", column: "target_application_id", on_delete: :nullify
   add_foreign_key "transfer_markers", "candidates"
   add_foreign_key "transfer_markers", "companies"
