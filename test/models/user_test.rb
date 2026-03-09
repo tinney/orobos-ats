@@ -221,13 +221,100 @@ class UserTest < ActiveSupport::TestCase
       email: "discarded@example.com",
       first_name: "Old",
       last_name: "User",
-      role: "interviewer",
-      discarded_at: Time.current
+      role: "interviewer"
     )
+    discarded_user.discard!
 
     discarded_users = User.discarded
     assert_includes discarded_users, discarded_user
     assert_not_includes discarded_users, active_user
+  end
+
+  # --- Default scope ---
+
+  test "default scope excludes soft-deleted users from queries" do
+    discarded_user = User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    )
+    discarded_user.discard!
+
+    assert_not_includes User.all, discarded_user
+    assert_includes User.all, @user
+  end
+
+  test "default scope excludes soft-deleted users from count" do
+    User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    ).discard!
+
+    assert_equal 1, User.count
+  end
+
+  test "default scope excludes soft-deleted users from find_by" do
+    discarded_user = User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    )
+    discarded_user.discard!
+
+    assert_nil User.find_by(email: "discarded@example.com")
+  end
+
+  # --- Unscoped access methods ---
+
+  test "with_discarded includes soft-deleted users" do
+    discarded_user = User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    )
+    discarded_user.discard!
+
+    all_users = User.with_discarded
+    assert_includes all_users, @user
+    assert_includes all_users, discarded_user
+  end
+
+  test "only_discarded returns only soft-deleted users" do
+    discarded_user = User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    )
+    discarded_user.discard!
+
+    only_deleted = User.only_discarded
+    assert_includes only_deleted, discarded_user
+    assert_not_includes only_deleted, @user
+  end
+
+  test "with_discarded allows find_by on soft-deleted users" do
+    discarded_user = User.create!(
+      company: @company,
+      email: "discarded@example.com",
+      first_name: "Old",
+      last_name: "User",
+      role: "interviewer"
+    )
+    discarded_user.discard!
+
+    found = User.with_discarded.find_by(email: "discarded@example.com")
+    assert_equal discarded_user, found
   end
 
   # --- full_name ---

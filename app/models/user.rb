@@ -23,8 +23,21 @@ class User < ApplicationRecord
 
   before_validation :normalize_email
 
+  # Default scope: soft-deleted users are excluded from all queries by default.
+  default_scope { where(discarded_at: nil) }
+
   scope :active, -> { where(discarded_at: nil) }
-  scope :discarded, -> { where.not(discarded_at: nil) }
+  scope :discarded, -> { unscope(where: :discarded_at).where.not(discarded_at: nil) }
+
+  # Class method to query including soft-deleted records
+  def self.with_discarded
+    unscope(where: :discarded_at)
+  end
+
+  # Class method to query only soft-deleted records
+  def self.only_discarded
+    unscope(where: :discarded_at).where.not(discarded_at: nil)
+  end
 
   # --- Magic link token management ---
 
