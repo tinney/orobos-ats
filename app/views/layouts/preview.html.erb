@@ -21,6 +21,11 @@
         <span class="text-sm font-medium text-yellow-800">Preview Mode</span>
         <span class="text-sm text-yellow-600">— This role is not yet published</span>
       </div>
+      <% if @authenticated_preview && @role.present? %>
+        <a href="<%= admin_role_path(@role) %>" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline">
+          ← Back to role
+        </a>
+      <% end %>
     </div>
   </div>
 

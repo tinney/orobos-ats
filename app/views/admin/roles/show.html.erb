@@ -15,6 +15,7 @@
     </div>
 
     <div class="flex items-center space-x-3">
+      <%= link_to "Preview", role_preview_path(@role), class: "inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50", target: "_blank", title: "Preview how this role appears to candidates" %>
       <%= link_to "Edit", edit_admin_role_path(@role), class: "inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50" %>
       <% if current_user_role_at_least?(:admin) %>
         <%= button_to admin_role_path(@role), method: :delete,
