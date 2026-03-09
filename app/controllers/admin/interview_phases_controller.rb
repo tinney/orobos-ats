@@ -61,7 +61,7 @@ module Admin
     end
 
     def interview_phase_params
-      params.require(:interview_phase).permit(:name, :phase_owner_id)
+      params.require(:interview_phase).permit(:name, :phase_owner_id, :scorecard_template_id)
     end
   end
 end

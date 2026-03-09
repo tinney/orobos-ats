@@ -8,9 +8,17 @@ module Admin
     before_action :set_scorecard, only: [:edit, :update]
 
     # GET /admin/interviews/:interview_id/scorecards/new
+    # Pre-populates scorecard categories from the interview phase's
+    # assigned scorecard template if one exists. Otherwise falls back
+    # to 3 blank category fields.
     def new
       @scorecard = @interview.scorecards.build(user: current_user)
-      3.times { @scorecard.scorecard_categories.build }
+      template = @interview.interview_phase.scorecard_template
+      if template && template.scorecard_template_categories.any?
+        template.build_scorecard_categories(@scorecard)
+      else
+        3.times { @scorecard.scorecard_categories.build }
+      end
     end
 
     # POST /admin/interviews/:interview_id/scorecards

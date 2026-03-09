@@ -191,6 +191,13 @@
                   <span class="p-1 text-gray-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span>
                 <% end %>
 
+                <%# Scorecard templates link %>
+                <%= link_to admin_role_interview_phase_scorecard_templates_path(@role, phase), class: "p-1 text-gray-400 hover:text-green-600", title: "Scorecard Templates" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                  </svg>
+                <% end %>
+
                 <%# Edit button %>
                 <button type="button" class="p-1 text-gray-400 hover:text-blue-600" data-action="click->inline-edit#edit" title="Rename">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

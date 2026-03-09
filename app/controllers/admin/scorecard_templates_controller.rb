@@ -1,85 +1,89 @@
 # frozen_string_literal: true
 
 module Admin
+  # Manages reusable scorecard templates at the company level.
+  # Templates define rating categories that pre-populate scorecards
+  # when interviewers evaluate candidates.
+  # Accessible by admins and hiring managers.
   class ScorecardTemplatesController < BaseController
     self._required_roles = [{role: "hiring_manager"}]
 
-    before_action :set_role
-    before_action :set_interview_phase
-    before_action :set_scorecard_template, only: %i[show edit update destroy]
+    before_action :set_template, only: %i[show edit update destroy]
 
-    # GET /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates
+    # GET /admin/scorecard_templates
     def index
-      @templates = @interview_phase.scorecards_templates.includes(:scorecard_template_categories).order(:name)
+      @templates = ScorecardsTemplate.includes(:scorecard_template_categories).order(name: :asc)
     end
 
-    # GET /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates/new
+    # GET /admin/scorecard_templates/new
     def new
-      @template = @interview_phase.scorecards_templates.build
-      @template.scorecard_template_categories.build(sort_order: 0)
+      @template = ScorecardsTemplate.new
+      3.times { @template.scorecard_template_categories.build }
     end
 
-    # POST /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates
+    # POST /admin/scorecard_templates
     def create
-      @template = @interview_phase.scorecards_templates.build(scorecard_template_params)
+      @template = ScorecardsTemplate.new(template_params)
       @template.company = current_company
+      assign_sort_orders(@template)
 
       if @template.save
-        redirect_to admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase),
-          notice: "Scorecard template \"#{@template.name}\" created."
+        redirect_to admin_scorecard_templates_path, notice: "Scorecard template \"#{@template.name}\" created."
       else
         render :new, status: :unprocessable_entity
       end
     end
 
-    # GET /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates/:id
+    # GET /admin/scorecard_templates/:id
     def show
       @categories = @template.scorecard_template_categories.ordered
     end
 
-    # GET /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates/:id/edit
+    # GET /admin/scorecard_templates/:id/edit
     def edit
     end
 
-    # PATCH /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates/:id
+    # PATCH /admin/scorecard_templates/:id
     def update
-      if @template.update(scorecard_template_params)
-        redirect_to admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase),
-          notice: "Scorecard template \"#{@template.name}\" updated."
+      @template.assign_attributes(template_params)
+      assign_sort_orders(@template)
+
+      if @template.save
+        redirect_to admin_scorecard_template_path(@template), notice: "Scorecard template updated."
       else
         render :edit, status: :unprocessable_entity
       end
     end
 
-    # DELETE /admin/roles/:role_id/interview_phases/:interview_phase_id/scorecard_templates/:id
+    # DELETE /admin/scorecard_templates/:id
     def destroy
       name = @template.name
       @template.destroy!
-      redirect_to admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase),
-        notice: "Scorecard template \"#{name}\" deleted."
+      redirect_to admin_scorecard_templates_path, notice: "Scorecard template \"#{name}\" deleted."
     end
 
     private
 
-    def set_role
-      @role = Role.find(params[:role_id])
+    def set_template
+      @template = ScorecardsTemplate.find(params[:id])
     end
 
-    def set_interview_phase
-      @interview_phase = @role.interview_phases.find(params[:interview_phase_id])
-    end
-
-    def set_scorecard_template
-      @template = @interview_phase.scorecards_templates.find(params[:id])
-    end
-
-    def scorecard_template_params
+    def template_params
       params.require(:scorecards_template).permit(
         :name, :description,
-        scorecard_template_categories_attributes: [
-          :id, :name, :sort_order, :rating_scale, :_destroy
-        ]
+        scorecard_template_categories_attributes: [:id, :name, :_destroy]
       )
+    end
+
+    # Auto-assign sort_order based on position in the form
+    def assign_sort_orders(template)
+      active_index = 0
+      template.scorecard_template_categories.each do |cat|
+        unless cat.marked_for_destruction?
+          cat.sort_order = active_index
+          active_index += 1
+        end
+      end
     end
   end
 end
