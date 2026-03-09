@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_09_090002) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_09_090003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -288,6 +288,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090002) do
     t.index ["scorecard_id"], name: "index_scorecard_categories_on_scorecard_id"
   end
 
+  create_table "scorecard_template_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "rating_scale", default: 5, null: false
+    t.uuid "scorecards_template_id", null: false
+    t.integer "sort_order", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["scorecards_template_id", "name"], name: "index_scorecard_tpl_categories_on_template_and_name", unique: true
+    t.index ["scorecards_template_id", "sort_order"], name: "index_scorecard_tpl_categories_on_template_and_order"
+    t.index ["scorecards_template_id"], name: "index_scorecard_template_categories_on_scorecards_template_id"
+  end
+
   create_table "scorecards", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "company_id", null: false
     t.datetime "created_at", null: false
@@ -300,6 +312,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090002) do
     t.index ["interview_id", "user_id"], name: "index_scorecards_on_interview_id_and_user_id", unique: true
     t.index ["interview_id"], name: "index_scorecards_on_interview_id"
     t.index ["user_id"], name: "index_scorecards_on_user_id"
+  end
+
+  create_table "scorecards_templates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "company_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.uuid "interview_phase_id", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id"], name: "index_scorecards_templates_on_company_id"
+    t.index ["interview_phase_id", "name"], name: "index_scorecards_templates_on_phase_and_name", unique: true
+    t.index ["interview_phase_id"], name: "index_scorecards_templates_on_interview_phase_id"
   end
 
   create_table "tenants", force: :cascade do |t|
@@ -382,9 +406,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_090002) do
   add_foreign_key "roles", "companies"
   add_foreign_key "roles", "users", column: "hiring_manager_id", on_delete: :nullify
   add_foreign_key "scorecard_categories", "scorecards", on_delete: :cascade
+  add_foreign_key "scorecard_template_categories", "scorecards_templates", on_delete: :cascade
   add_foreign_key "scorecards", "companies"
   add_foreign_key "scorecards", "interviews", on_delete: :cascade
   add_foreign_key "scorecards", "users", on_delete: :restrict
+  add_foreign_key "scorecards_templates", "companies"
+  add_foreign_key "scorecards_templates", "interview_phases"
   add_foreign_key "transfer_markers", "applications", column: "target_application_id", on_delete: :nullify
   add_foreign_key "transfer_markers", "candidates"
   add_foreign_key "transfer_markers", "companies"

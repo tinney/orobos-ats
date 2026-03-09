@@ -17,6 +17,7 @@ class InterviewPhase < ApplicationRecord
   belongs_to :original_phase, class_name: "InterviewPhase", optional: true
   has_many :versions, class_name: "InterviewPhase", foreign_key: :original_phase_id, dependent: :nullify
   has_many :candidate_interviews, class_name: "Interview", dependent: :destroy
+  has_many :scorecards_templates, dependent: :destroy
 
   validates :name, presence: true
   validate :name_unique_among_active_phases, unless: :archived?
