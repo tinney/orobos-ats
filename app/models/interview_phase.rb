@@ -15,9 +15,9 @@ class InterviewPhase < ApplicationRecord
   belongs_to :role
   belongs_to :phase_owner, -> { unscope(where: :discarded_at) }, class_name: "User", optional: true
   belongs_to :original_phase, class_name: "InterviewPhase", optional: true
+  belongs_to :scorecard_template, class_name: "ScorecardsTemplate", optional: true
   has_many :versions, class_name: "InterviewPhase", foreign_key: :original_phase_id, dependent: :nullify
   has_many :candidate_interviews, class_name: "Interview", dependent: :destroy
-  has_many :scorecards_templates, dependent: :destroy
 
   validates :name, presence: true
   validate :name_unique_among_active_phases, unless: :archived?
@@ -108,6 +108,7 @@ class InterviewPhase < ApplicationRecord
         name: attributes.fetch(:name, name),
         position: attributes.fetch(:position, position),
         phase_owner_id: attributes.fetch(:phase_owner_id, phase_owner_id),
+        scorecard_template_id: attributes.fetch(:scorecard_template_id, scorecard_template_id),
         original_phase_id: lineage_root_id,
         phase_version: next_version
       )

@@ -1,0 +1,168 @@
+<%= form_with(model: [:admin, @role, @interview_phase, template],
+  url: template.new_record? ?
+    admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase) :
+    admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, template),
+  method: template.new_record? ? :post : :patch,
+  class: "space-y-6",
+  data: { controller: "scorecard-template-form" }
+) do |f| %>
+  <% if template.errors.any? %>
+    <div class="p-4 bg-red-50 border border-red-200 rounded-md">
+      <h3 class="text-sm font-medium text-red-800">
+        <%= pluralize(template.errors.count, "error") %> prevented this template from being saved:
+      </h3>
+      <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+        <% template.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# === Template Info Section === %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-5">
+    <h3 class="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">Template Details</h3>
+
+    <div>
+      <%= f.label :name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :name,
+        class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+        placeholder: "e.g. Technical Assessment",
+        required: true,
+        autofocus: template.new_record? %>
+    </div>
+
+    <div>
+      <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_area :description,
+        class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+        rows: 3,
+        placeholder: "Optional description of what this template evaluates" %>
+    </div>
+  </div>
+
+  <%# === Categories Section === %>
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 space-y-4">
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div>
+        <h3 class="text-base font-semibold text-gray-900">Rating Categories</h3>
+        <p class="mt-1 text-xs text-gray-500">Define the categories interviewers will rate on a 1-5 scale. Drag to reorder.</p>
+      </div>
+      <button type="button"
+        class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700"
+        data-action="click->scorecard-template-form#addCategory">
+        + Add Category
+      </button>
+    </div>
+
+    <div data-scorecard-template-form-target="categoriesList" class="space-y-3">
+      <% categories = template.scorecard_template_categories %>
+      <% categories = [template.scorecard_template_categories.build(sort_order: 0)] if categories.empty? && template.new_record? %>
+      <% categories.reject(&:marked_for_destruction?).sort_by(&:sort_order).each_with_index do |category, index| %>
+        <%= f.fields_for :scorecard_template_categories, category do |cf| %>
+          <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-md border border-gray-200"
+               data-scorecard-template-form-target="categoryRow">
+            <%# Drag handle %>
+            <span class="cursor-grab text-gray-400 hover:text-gray-600" title="Drag to reorder"
+                  data-scorecard-template-form-target="dragHandle">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+              </svg>
+            </span>
+
+            <%# Sort order (hidden, managed by JS) %>
+            <%= cf.hidden_field :sort_order, data: { scorecard_template_form_target: "sortOrder" } %>
+
+            <%# Category name %>
+            <div class="flex-1">
+              <%= cf.text_field :name,
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm",
+                placeholder: "Category name (e.g. Problem Solving)" %>
+            </div>
+
+            <%# Rating scale display (fixed at 1-5) %>
+            <div class="text-xs text-gray-500 whitespace-nowrap px-2">
+              Rating: 1–5
+            </div>
+            <%= cf.hidden_field :rating_scale, value: 5 %>
+
+            <%# Remove button %>
+            <% if category.persisted? %>
+              <%= cf.hidden_field :_destroy, value: "0", data: { scorecard_template_form_target: "destroyField" } %>
+              <button type="button"
+                class="p-1 text-gray-400 hover:text-red-600"
+                data-action="click->scorecard-template-form#removeCategory"
+                title="Remove category">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            <% else %>
+              <button type="button"
+                class="p-1 text-gray-400 hover:text-red-600"
+                data-action="click->scorecard-template-form#removeCategoryRow"
+                title="Remove category">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Template for new categories (used by Stimulus to clone) %>
+    <template data-scorecard-template-form-target="categoryTemplate">
+      <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-md border border-gray-200"
+           data-scorecard-template-form-target="categoryRow">
+        <span class="cursor-grab text-gray-400 hover:text-gray-600" title="Drag to reorder"
+              data-scorecard-template-form-target="dragHandle">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+          </svg>
+        </span>
+        <input type="hidden" name="scorecards_template[scorecard_template_categories_attributes][NEW_INDEX][sort_order]"
+               value="0" data-scorecard-template-form-target="sortOrder">
+        <div class="flex-1">
+          <input type="text"
+                 name="scorecards_template[scorecard_template_categories_attributes][NEW_INDEX][name]"
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                 placeholder="Category name (e.g. Problem Solving)">
+        </div>
+        <div class="text-xs text-gray-500 whitespace-nowrap px-2">Rating: 1–5</div>
+        <input type="hidden" name="scorecards_template[scorecard_template_categories_attributes][NEW_INDEX][rating_scale]" value="5">
+        <button type="button"
+          class="p-1 text-gray-400 hover:text-red-600"
+          data-action="click->scorecard-template-form#removeCategoryRow"
+          title="Remove category">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </template>
+  </div>
+
+  <%# === Free-form Notes Reminder === %>
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <p class="text-sm text-blue-800">
+      <strong>Note:</strong> A free-form notes field is automatically included on every scorecard. Interviewers can add general comments and observations in addition to the category ratings.
+    </p>
+  </div>
+
+  <%# === Actions === %>
+  <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+    <div class="flex items-center space-x-4">
+      <%= f.submit(template.new_record? ? "Create Template" : "Update Template",
+        class: "inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed") %>
+      <%= link_to "Cancel",
+        admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase),
+        class: "text-sm text-gray-600 hover:text-gray-800" %>
+    </div>
+
+    <% unless template.new_record? %>
+      <p class="text-xs text-gray-400">Last updated <%= time_ago_in_words(template.updated_at) %> ago</p>
+    <% end %>
+  </div>
+<% end %>
