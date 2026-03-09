@@ -17,9 +17,10 @@ module Admin
 
     # GET /admin/roles/:id
     def show
-      @interview_phases = @role.interview_phases.active.ordered
+      @interview_phases = @role.interview_phases.active.ordered.includes(:scorecard_template)
       @interview_phase = InterviewPhase.new
       @available_owners = User.active.where(role: %w[admin hiring_manager]).order(:first_name, :last_name)
+      @scorecard_templates = ScorecardsTemplate.order(:name)
     end
 
     # GET /admin/roles/new

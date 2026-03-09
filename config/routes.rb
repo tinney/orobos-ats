@@ -85,6 +85,9 @@ Rails.application.routes.draw do
 
       # Unified assignments dashboard
       resources :assignments, only: :index
+
+      # Company-level scorecard templates
+      resources :scorecard_templates, only: %i[index new create show edit update destroy]
     end
 
     # Public careers pages (no auth required)
