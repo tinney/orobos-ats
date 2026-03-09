@@ -369,6 +369,92 @@ class InterviewPhaseTest < ActiveSupport::TestCase
     assert_equal 0, new_phase.position
   end
 
+  # --- move_to edge cases ---
+
+  test "move_to clamps negative position to 0" do
+    @role.interview_phases.destroy_all
+
+    p1 = InterviewPhase.create!(name: "Phase A", position: 0, role: @role, company: @company)
+    p2 = InterviewPhase.create!(name: "Phase B", position: 1, role: @role, company: @company)
+    p3 = InterviewPhase.create!(name: "Phase C", position: 2, role: @role, company: @company)
+
+    p3.move_to(-5)
+    assert_equal 0, p3.reload.position
+    assert_equal 1, p1.reload.position
+    assert_equal 2, p2.reload.position
+  end
+
+  test "move_to clamps position beyond max to last position" do
+    @role.interview_phases.destroy_all
+
+    p1 = InterviewPhase.create!(name: "Phase A", position: 0, role: @role, company: @company)
+    p2 = InterviewPhase.create!(name: "Phase B", position: 1, role: @role, company: @company)
+    p3 = InterviewPhase.create!(name: "Phase C", position: 2, role: @role, company: @company)
+
+    p1.move_to(100)
+    assert_equal 2, p1.reload.position
+    assert_equal 0, p2.reload.position
+    assert_equal 1, p3.reload.position
+  end
+
+  test "move_to handles single phase" do
+    @role.interview_phases.destroy_all
+
+    p1 = InterviewPhase.create!(name: "Only Phase", position: 0, role: @role, company: @company)
+    p1.move_to(0) # no-op
+    assert_equal 0, p1.reload.position
+  end
+
+  # --- recompact_positions! ---
+
+  test "recompact_positions! closes gaps after deletion" do
+    @role.interview_phases.destroy_all
+
+    p1 = InterviewPhase.create!(name: "Phase A", position: 0, role: @role, company: @company)
+    _p2 = InterviewPhase.create!(name: "Phase B", position: 1, role: @role, company: @company)
+    p3 = InterviewPhase.create!(name: "Phase C", position: 2, role: @role, company: @company)
+
+    _p2.destroy!
+    InterviewPhase.recompact_positions!(@role)
+
+    assert_equal 0, p1.reload.position
+    assert_equal 1, p3.reload.position
+  end
+
+  test "recompact_positions! ignores archived phases" do
+    @role.interview_phases.destroy_all
+
+    p1 = InterviewPhase.create!(name: "Phase A", position: 0, role: @role, company: @company)
+    p2 = InterviewPhase.create!(name: "Phase B", position: 1, role: @role, company: @company)
+    p3 = InterviewPhase.create!(name: "Phase C", position: 2, role: @role, company: @company)
+
+    p2.archive!
+    InterviewPhase.recompact_positions!(@role)
+
+    assert_equal 0, p1.reload.position
+    assert_equal 1, p2.reload.position # archived, unchanged
+    assert_equal 1, p3.reload.position # recompacted from 2 to 1
+  end
+
+  test "positions remain contiguous after multiple operations" do
+    @role.interview_phases.destroy_all
+
+    phases = 5.times.map do |i|
+      InterviewPhase.create!(name: "Phase #{i}", role: @role, company: @company)
+    end
+
+    # Move phase 4 to position 1
+    phases[4].move_to(1)
+    positions = @role.interview_phases.active.ordered.pluck(:position)
+    assert_equal [0, 1, 2, 3, 4], positions
+
+    # Move phase at position 0 to position 3
+    first = @role.interview_phases.active.ordered.first
+    first.move_to(3)
+    positions = @role.interview_phases.active.ordered.pluck(:position)
+    assert_equal [0, 1, 2, 3, 4], positions
+  end
+
   # --- Edge cases ---
 
   test "destroying original phase nullifies version references" do
