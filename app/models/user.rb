@@ -20,6 +20,7 @@ class User < ApplicationRecord
   validates :time_zone, presence: true,
     inclusion: {in: ->(_) { ActiveSupport::TimeZone::MAPPING.keys },
                 message: "is not a recognized timezone"}
+  validate :must_retain_at_least_one_admin, if: :role_changed?
 
   before_validation :normalize_email
 
@@ -146,6 +147,18 @@ class User < ApplicationRecord
   end
 
   private
+
+  # Prevents demoting the last admin in a tenant.
+  # This is a model-level guard complementing the controller-level check,
+  # ensuring data integrity even when updates bypass controllers.
+  def must_retain_at_least_one_admin
+    return unless role_was == "admin" && role != "admin"
+
+    other_active_admins = self.class.where(role: "admin").where.not(id: id)
+    if other_active_admins.none?
+      errors.add(:role, "cannot be changed: at least one admin must exist in the organization")
+    end
+  end
 
   def normalize_email
     self.email = email.to_s.strip.downcase
