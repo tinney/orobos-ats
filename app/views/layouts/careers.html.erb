@@ -13,19 +13,24 @@
   <%= stylesheet_link_tag :app %>
   <%= javascript_importmap_tags %>
 </head>
-<body class="h-full flex flex-col min-h-screen bg-gray-50">
+<body class="h-full flex flex-col min-h-screen bg-gray-50" data-controller="careers">
   <header class="bg-white border-b border-gray-200">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
-      <% if current_company.logo.attached? %>
-        <%= image_tag current_company.logo, class: "flex-shrink-0 h-10 w-10 rounded-full object-cover", alt: "#{current_company.name} logo" %>
-      <% else %>
-        <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background-color: <%= current_company.primary_color || '#4F46E5' %>;">
-          <%= current_company.name.first.upcase %>
+      <%= link_to careers_path, class: "flex items-center gap-3 no-underline" do %>
+        <% if current_company.logo.attached? %>
+          <%= image_tag current_company.logo, class: "flex-shrink-0 h-10 w-10 rounded-full object-cover", alt: "#{current_company.name} logo" %>
+        <% else %>
+          <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background-color: <%= current_company.primary_color || '#4F46E5' %>;">
+            <%= current_company.name.first.upcase %>
+          </div>
+        <% end %>
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900"><%= current_company.name %></h1>
+          <% if current_company.description.present? %>
+            <p class="text-xs text-gray-500"><%= truncate(current_company.description, length: 80) %></p>
+          <% end %>
         </div>
       <% end %>
-      <div>
-        <h1 class="text-lg font-semibold text-gray-900"><%= current_company.name %></h1>
-      </div>
     </div>
   </header>
 
