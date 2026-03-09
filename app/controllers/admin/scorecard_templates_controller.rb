@@ -75,8 +75,14 @@ module Admin
       )
     end
 
-    # Auto-assign sort_order based on position in the form
+    # Auto-assign sort_order based on position in the form, but only
+    # when sort_order values weren't explicitly provided in the params.
+    # The Stimulus drag-and-drop controller sets sort_order explicitly.
     def assign_sort_orders(template)
+      cats_attrs = params.dig(:scorecards_template, :scorecard_template_categories_attributes)
+      has_explicit_sort_orders = cats_attrs&.values&.any? { |a| a[:sort_order].present? }
+      return if has_explicit_sort_orders
+
       active_index = 0
       template.scorecard_template_categories.each do |cat|
         unless cat.marked_for_destruction?
