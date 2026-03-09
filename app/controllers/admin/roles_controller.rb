@@ -25,6 +25,7 @@ module Admin
     # GET /admin/roles/new
     def new
       @role = Role.new(status: "draft")
+      load_hiring_managers
     end
 
     # POST /admin/roles
@@ -35,12 +36,14 @@ module Admin
       if @role.save
         redirect_to admin_roles_path, notice: "\"#{@role.title}\" has been created."
       else
+        load_hiring_managers
         render :new, status: :unprocessable_entity
       end
     end
 
     # GET /admin/roles/:id/edit
     def edit
+      load_hiring_managers
     end
 
     # PATCH/PUT /admin/roles/:id
@@ -48,8 +51,19 @@ module Admin
       if @role.update(role_params)
         redirect_to admin_role_path(@role), notice: "\"#{@role.title}\" has been updated."
       else
+        load_hiring_managers
         render :edit, status: :unprocessable_entity
       end
+    end
+
+    # DELETE /admin/roles/:id
+    # Hard-deletes a role and all associated data (applications, interviews, phases, etc.)
+    # Requires admin role — hiring managers cannot delete roles.
+    def destroy
+      authorize! :admin
+      title = @role.title
+      @role.destroy!
+      redirect_to admin_roles_path, notice: "\"#{title}\" has been deleted."
     end
 
     # PATCH /admin/roles/:id/transition
@@ -82,7 +96,7 @@ module Admin
     end
 
     def role_params
-      params.require(:role).permit(:title, :location, :remote, :salary_min, :salary_max, :salary_currency, :status, :description)
+      params.require(:role).permit(:title, :location, :remote, :salary_min, :salary_max, :salary_currency, :status, :description, :hiring_manager_id)
     end
   end
 end

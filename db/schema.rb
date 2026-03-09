@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_090004) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_09_090001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -359,7 +359,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_090004) do
   add_foreign_key "custom_questions", "companies"
   add_foreign_key "custom_questions", "roles"
   add_foreign_key "interview_participants", "interviews", on_delete: :cascade
-  add_foreign_key "interview_participants", "users", on_delete: :cascade
+  add_foreign_key "interview_participants", "users", on_delete: :nullify
   add_foreign_key "interview_phases", "companies"
   add_foreign_key "interview_phases", "interview_phases", column: "original_phase_id", on_delete: :nullify
   add_foreign_key "interview_phases", "roles"
@@ -367,12 +367,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_090004) do
   add_foreign_key "interviews", "companies", on_delete: :cascade
   add_foreign_key "interviews", "interview_phases", on_delete: :cascade
   add_foreign_key "offer_revisions", "offers", on_delete: :cascade
-  add_foreign_key "offer_revisions", "users", column: "changed_by_id"
+  add_foreign_key "offer_revisions", "users", column: "changed_by_id", on_delete: :nullify
   add_foreign_key "offers", "applications", column: "offer_application_id", on_delete: :cascade
   add_foreign_key "offers", "companies"
-  add_foreign_key "offers", "users", column: "created_by_id"
+  add_foreign_key "offers", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "panel_interviews", "interviews", on_delete: :cascade
-  add_foreign_key "panel_interviews", "users", on_delete: :cascade
+  add_foreign_key "panel_interviews", "users", on_delete: :nullify
   add_foreign_key "question_snapshots", "applications", on_delete: :cascade
   add_foreign_key "question_snapshots", "companies"
   add_foreign_key "question_snapshots", "custom_questions", on_delete: :nullify
@@ -380,11 +380,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_090004) do
   add_foreign_key "role_status_transitions", "roles", on_delete: :cascade
   add_foreign_key "role_status_transitions", "users", on_delete: :nullify
   add_foreign_key "roles", "companies"
-  add_foreign_key "roles", "users", column: "hiring_manager_id"
+  add_foreign_key "roles", "users", column: "hiring_manager_id", on_delete: :nullify
   add_foreign_key "scorecard_categories", "scorecards", on_delete: :cascade
   add_foreign_key "scorecards", "companies"
   add_foreign_key "scorecards", "interviews", on_delete: :cascade
-  add_foreign_key "scorecards", "users"
+  add_foreign_key "scorecards", "users", on_delete: :nullify
   add_foreign_key "transfer_markers", "applications", column: "target_application_id", on_delete: :nullify
   add_foreign_key "transfer_markers", "candidates"
   add_foreign_key "transfer_markers", "companies"

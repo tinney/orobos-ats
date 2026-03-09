@@ -25,7 +25,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :roles, only: %i[index show new create edit update] do
+      resources :roles, only: %i[index show new create edit update destroy] do
         member do
           patch :transition
           post :generate_preview_token
