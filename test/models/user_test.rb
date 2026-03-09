@@ -205,9 +205,9 @@ class UserTest < ActiveSupport::TestCase
       email: "discarded@example.com",
       first_name: "Old",
       last_name: "User",
-      role: "interviewer",
-      discarded_at: Time.current
+      role: "interviewer"
     )
+    discarded_user.discard!
 
     active_users = User.active
     assert_includes active_users, active_user

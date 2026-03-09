@@ -5,7 +5,8 @@ module Admin
   # Only accessible by admin users.
   # Supports CRUD, role changes (promote/demote), and soft-delete lifecycle (deactivate/reactivate).
   class UsersController < BaseController
-    before_action :set_user, only: %i[edit update promote demote deactivate reactivate]
+    before_action :set_user, only: %i[edit update promote demote deactivate]
+    before_action :set_user_with_discarded, only: %i[reactivate]
     before_action :prevent_self_modification, only: %i[promote demote deactivate]
     before_action :prevent_last_admin_removal, only: %i[demote deactivate]
 
@@ -90,6 +91,10 @@ module Admin
 
     def set_user
       @user = User.find(params[:id])
+    end
+
+    def set_user_with_discarded
+      @user = User.with_discarded.find(params[:id])
     end
 
     # Prevent admins from modifying their own role or deactivating themselves
