@@ -36,6 +36,7 @@ Rails.application.routes.draw do
           member do
             patch :move
           end
+          resources :scorecard_templates, only: %i[index new create show edit update destroy], controller: "scorecard_templates"
         end
 
         resources :custom_questions, only: %i[create update destroy]
