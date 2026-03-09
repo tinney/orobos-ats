@@ -11,23 +11,37 @@
     </div>
   <% end %>
 
+  <% has_template = interview.interview_phase.scorecard_template.present? %>
   <div>
     <h3 class="text-sm font-medium text-gray-900 mb-3">Rating Categories (1-5)</h3>
+    <% if has_template && !scorecard.persisted? %>
+      <p class="text-xs text-indigo-600 mb-3">Categories pre-filled from the "<%= interview.interview_phase.scorecard_template.name %>" template.</p>
+    <% end %>
     <div id="categories-container" class="space-y-4">
       <%= f.fields_for :scorecard_categories do |cf| %>
         <div class="flex items-center gap-4">
-          <%= cf.text_field :name, placeholder: "Category name (e.g., Technical Skills)",
-              class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+          <% if has_template && !scorecard.persisted? && cf.object.name.present? %>
+            <%# Template-sourced category — name is pre-filled and read-only %>
+            <%= cf.hidden_field :name %>
+            <span class="flex-1 text-sm font-medium text-gray-900 py-2 px-3 bg-gray-50 rounded-md border border-gray-200"><%= cf.object.name %></span>
+          <% else %>
+            <%= cf.text_field :name, placeholder: "Category name (e.g., Technical Skills)",
+                class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+          <% end %>
           <%= cf.select :rating, (1..5).map { |n| [n, n] }, { include_blank: "Rating" },
               class: "rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
-          <label class="flex items-center">
-            <%= cf.check_box :_destroy, class: "rounded border-gray-300 text-red-600 focus:ring-red-500" %>
-            <span class="ml-1 text-xs text-red-600">Remove</span>
-          </label>
+          <% unless has_template && !scorecard.persisted? %>
+            <label class="flex items-center">
+              <%= cf.check_box :_destroy, class: "rounded border-gray-300 text-red-600 focus:ring-red-500" %>
+              <span class="ml-1 text-xs text-red-600">Remove</span>
+            </label>
+          <% end %>
         </div>
       <% end %>
     </div>
-    <p class="text-xs text-gray-500 mt-2">Add categories to rate different aspects of the interview.</p>
+    <% unless has_template && !scorecard.persisted? %>
+      <p class="text-xs text-gray-500 mt-2">Add categories to rate different aspects of the interview.</p>
+    <% end %>
   </div>
 
   <div>
