@@ -1,23 +1,26 @@
 <div class="max-w-3xl">
   <div class="flex items-start justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900"><%= @template.name %></h1>
-      <p class="mt-1 text-sm text-gray-500">
-        Template for <strong><%= @interview_phase.name %></strong> phase of <strong><%= @role.title %></strong>
-      </p>
+      <%= link_to "← Back to Templates", admin_scorecard_templates_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+      <h1 class="text-2xl font-bold text-gray-900 mt-2"><%= @template.name %></h1>
+      <% if @template.interview_phases.active.any? %>
+        <p class="mt-1 text-sm text-gray-500">
+          Used by <%= @template.interview_phases.active.count %> interview phase(s)
+        </p>
+      <% end %>
     </div>
     <div class="flex items-center space-x-3">
       <%= link_to "Edit",
-        edit_admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, @template),
+        edit_admin_scorecard_template_path(@template),
         class: "inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50" %>
       <%= button_to "Delete",
-        admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, @template),
+        admin_scorecard_template_path(@template),
         method: :delete,
         class: "inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700",
         form: {
           data: {
             controller: "confirm",
-            confirm_message_value: "Delete template \"#{@template.name}\"? This cannot be undone.",
+            confirm_message_value: "Delete template \"#{@template.name}\"? Phases using it will revert to blank scorecard forms.",
             action: "submit->confirm#submit"
           }
         } %>
@@ -73,9 +76,4 @@
     </div>
   </div>
 
-  <div class="mt-6">
-    <%= link_to "&larr; Back to Templates".html_safe,
-      admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase),
-      class: "text-sm text-gray-600 hover:text-gray-800" %>
-  </div>
 </div>

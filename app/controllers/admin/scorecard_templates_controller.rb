@@ -71,7 +71,7 @@ module Admin
     def template_params
       params.require(:scorecards_template).permit(
         :name, :description,
-        scorecard_template_categories_attributes: [:id, :name, :_destroy]
+        scorecard_template_categories_attributes: [:id, :name, :sort_order, :_destroy]
       )
     end
 
