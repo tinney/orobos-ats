@@ -1,7 +1,7 @@
-<%= form_with(model: [:admin, @role, @interview_phase, template],
+<%= form_with(model: [:admin, template],
   url: template.new_record? ?
-    admin_role_interview_phase_scorecard_templates_path(@role, @interview_phase) :
-    admin_role_interview_phase_scorecard_template_path(@role, @interview_phase, template),
+    admin_scorecard_templates_path :
+    admin_scorecard_template_path(template),
   method: template.new_record? ? :post : :patch,
   class: "space-y-6",
   data: { controller: "scorecard-template-form" }
@@ -84,8 +84,6 @@
             <div class="text-xs text-gray-500 whitespace-nowrap px-2">
               Rating: 1–5
             </div>
-            <%= cf.hidden_field :rating_scale, value: 5 %>
-
             <%# Remove button %>
             <% if category.persisted? %>
               <%= cf.hidden_field :_destroy, value: "0", data: { scorecard_template_form_target: "destroyField" } %>
@@ -131,7 +129,6 @@
                  placeholder="Category name (e.g. Problem Solving)">
         </div>
         <div class="text-xs text-gray-500 whitespace-nowrap px-2">Rating: 1–5</div>
-        <input type="hidden" name="scorecards_template[scorecard_template_categories_attributes][NEW_INDEX][rating_scale]" value="5">
         <button type="button"
           class="p-1 text-gray-400 hover:text-red-600"
           data-action="click->scorecard-template-form#removeCategoryRow"
