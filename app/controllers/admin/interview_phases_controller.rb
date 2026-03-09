@@ -37,10 +37,8 @@ module Admin
       name = @interview_phase.name
       @interview_phase.destroy!
 
-      # Recompact positions after deletion
-      @role.interview_phases.ordered.each_with_index do |phase, index|
-        phase.update_column(:position, index) if phase.position != index
-      end
+      # Recompact positions after deletion to maintain gap-free ordering
+      InterviewPhase.recompact_positions!(@role)
 
       redirect_to admin_role_path(@role), notice: "Interview phase \"#{name}\" has been removed."
     end

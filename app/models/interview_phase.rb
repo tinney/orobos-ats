@@ -122,16 +122,27 @@ class InterviewPhase < ApplicationRecord
     end
   end
 
-  # Move this phase to a specific position, reordering siblings accordingly
+  # Move this phase to a specific position, reordering siblings accordingly.
+  # Position is clamped to valid bounds [0, max_sibling_count].
   def move_to(new_position)
     return if new_position == position
 
     siblings = role.interview_phases.active.where.not(id: id).order(position: :asc).to_a
+    # Clamp to valid range
+    new_position = [[new_position, 0].max, siblings.length].min
     siblings.insert(new_position, self)
     siblings.each_with_index do |phase, index|
       phase.update_column(:position, index) if phase.position != index
     end
     reload
+  end
+
+  # Recompact positions for all active phases of this role to be sequential from 0.
+  # Useful after deletion or archival to maintain gap-free ordering.
+  def self.recompact_positions!(role)
+    role.interview_phases.active.order(position: :asc).each_with_index do |phase, index|
+      phase.update_column(:position, index) if phase.position != index
+    end
   end
 
   # Returns the full version history for this phase lineage
