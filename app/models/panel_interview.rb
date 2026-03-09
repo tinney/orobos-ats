@@ -2,7 +2,7 @@
 
 class PanelInterview < ApplicationRecord
   belongs_to :interview
-  belongs_to :user
+  belongs_to :user, -> { unscope(where: :discarded_at) }
 
   attr_accessor :skip_last_member_check
 

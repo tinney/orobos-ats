@@ -3,7 +3,7 @@ class RoleStatusTransition < ApplicationRecord
 
   belongs_to :company
   belongs_to :role
-  belongs_to :user, optional: true
+  belongs_to :user, -> { unscope(where: :discarded_at) }, optional: true
 
   validates :from_status, presence: true, inclusion: {in: Role::STATUSES}
   validates :to_status, presence: true, inclusion: {in: Role::STATUSES}

@@ -8,7 +8,7 @@ module Admin
     # Override inherited admin requirement — roles are accessible to hiring managers and above
     self._required_roles = [{role: "hiring_manager"}]
 
-    before_action :set_role, only: %i[show edit update transition generate_preview_token revoke_preview_token]
+    before_action :set_role, only: %i[show edit update destroy transition generate_preview_token revoke_preview_token]
 
     # GET /admin/roles
     def index

@@ -6,10 +6,16 @@ class User < ApplicationRecord
   SESSION_DURATION = 30.days
 
   belongs_to :company
-  has_many :interview_participants, dependent: :destroy
+  # Use restrict_with_error to prevent accidental hard deletion of users
+  # who have interview data. Soft-delete (discard!) does not trigger dependent callbacks.
+  has_many :interview_participants, dependent: :restrict_with_error
   has_many :interviews, through: :interview_participants
-  has_many :panel_interviews, dependent: :delete_all
+  has_many :panel_interviews, dependent: :restrict_with_error
   has_many :panel_assigned_interviews, through: :panel_interviews, source: :interview
+  has_many :scorecards, dependent: :restrict_with_error
+  has_many :created_offers, class_name: "Offer", foreign_key: :created_by_id, dependent: :restrict_with_error, inverse_of: :created_by
+  has_many :managed_roles, class_name: "Role", foreign_key: :hiring_manager_id, dependent: :nullify, inverse_of: :hiring_manager
+  has_many :owned_interview_phases, class_name: "InterviewPhase", foreign_key: :phase_owner_id, dependent: :nullify, inverse_of: :phase_owner
 
   validates :email, presence: true,
     uniqueness: {case_sensitive: false},

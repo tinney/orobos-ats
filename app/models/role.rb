@@ -20,7 +20,7 @@ class Role < ApplicationRecord
   has_many :status_transitions, class_name: "RoleStatusTransition", dependent: :destroy
   has_many :transfer_markers_as_source, class_name: "TransferMarker", foreign_key: :source_role_id, dependent: :destroy
   has_many :transfer_markers_as_target, class_name: "TransferMarker", foreign_key: :target_role_id, dependent: :destroy
-  belongs_to :hiring_manager, class_name: "User", optional: true
+  belongs_to :hiring_manager, -> { unscope(where: :discarded_at) }, class_name: "User", optional: true
   has_rich_text :description
 
   before_validation :generate_slug, if: -> { slug.blank? || title_changed? }

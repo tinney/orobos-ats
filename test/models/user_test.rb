@@ -397,6 +397,92 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.sole_admin?
   end
 
+  # --- Model-level last admin guard ---
+
+  test "cannot demote sole admin via direct update" do
+    assert @user.admin?
+    assert @user.sole_admin?
+
+    @user.role = "hiring_manager"
+    assert_not @user.valid?
+    assert_includes @user.errors[:role], "cannot be changed: at least one admin must exist in the organization"
+  end
+
+  test "cannot demote sole admin to interviewer via direct update" do
+    @user.role = "interviewer"
+    assert_not @user.valid?
+    assert_includes @user.errors[:role], "cannot be changed: at least one admin must exist in the organization"
+  end
+
+  test "sole admin demotion via update returns false" do
+    result = @user.update(role: "hiring_manager")
+    assert_not result
+    assert_equal "admin", @user.reload.role
+  end
+
+  test "sole admin demotion via update! raises error" do
+    assert_raises(ActiveRecord::RecordInvalid) do
+      @user.update!(role: "hiring_manager")
+    end
+    assert_equal "admin", @user.reload.role
+  end
+
+  test "can demote admin when another active admin exists" do
+    User.create!(
+      company: @company,
+      email: "admin2@example.com",
+      first_name: "Second",
+      last_name: "Admin",
+      role: "admin"
+    )
+
+    @user.role = "hiring_manager"
+    assert @user.valid?
+    assert @user.save
+    assert_equal "hiring_manager", @user.reload.role
+  end
+
+  test "cannot demote admin when only other admins are deactivated" do
+    other_admin = User.create!(
+      company: @company,
+      email: "admin2@example.com",
+      first_name: "Second",
+      last_name: "Admin",
+      role: "admin"
+    )
+    other_admin.discard!
+
+    @user.role = "hiring_manager"
+    assert_not @user.valid?
+    assert_includes @user.errors[:role], "cannot be changed: at least one admin must exist in the organization"
+  end
+
+  test "model guard does not fire when role is not changing" do
+    @user.first_name = "Updated"
+    assert @user.valid?
+    assert @user.save
+  end
+
+  test "model guard does not fire for non-admin role changes" do
+    User.create!(
+      company: @company,
+      email: "admin2@example.com",
+      first_name: "Second",
+      last_name: "Admin",
+      role: "admin"
+    )
+
+    hm = User.create!(
+      company: @company,
+      email: "hm@example.com",
+      first_name: "Hiring",
+      last_name: "Mgr",
+      role: "hiring_manager"
+    )
+    hm.role = "interviewer"
+    assert hm.valid?
+  end
+
   # --- Magic link token management ---
 
   test "generate_magic_link_token! returns raw token and stores digest" do

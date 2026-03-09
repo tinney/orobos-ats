@@ -1,6 +1,6 @@
 <% content_for(:title, "Team Members — Admin") %>
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6" data-controller="role-change" data-action="keydown@window->role-change#closeOnEscape">
   <div>
     <h1 class="text-2xl font-bold text-gray-900">Team Members</h1>
     <p class="mt-1 text-sm text-gray-500">Manage your organization's team and roles.</p>
@@ -12,6 +12,8 @@
 </div>
 
 <%# Active Users %>
+<div data-controller="role-change" data-action="keydown@window->role-change#closeOnEscape">
+
 <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden mb-8">
   <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
     <h2 class="text-sm font-semibold text-gray-700">Active Members (<%= @active_users.count %>)</h2>
@@ -62,22 +64,34 @@
                 <% unless user == current_user %>
                   <span class="text-gray-300">|</span>
 
+                  <%# Promote button — shows target role %>
                   <% unless user.role == "admin" %>
-                    <%= button_to promote_admin_user_path(user), method: :patch, form: {
-                      class: "inline",
-                      data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Promote #{user.full_name} to #{user.role == 'interviewer' ? 'Hiring Manager' : 'Admin'}?" }
-                    } do %>
-                      <span class="text-green-600 hover:text-green-800 font-medium cursor-pointer">↑ Promote</span>
-                    <% end %>
+                    <% target_role = user.role == "interviewer" ? "Hiring Manager" : "Admin" %>
+                    <button type="button"
+                            class="inline-flex items-center text-green-600 hover:text-green-800 font-medium cursor-pointer"
+                            data-action="click->role-change#showModal"
+                            data-role-change-url-param="<%= promote_admin_user_path(user) %>"
+                            data-role-change-name-param="<%= user.full_name %>"
+                            data-role-change-action-param="promote"
+                            data-role-change-target-role-param="<%= target_role %>">
+                      <svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                      Promote
+                    </button>
                   <% end %>
 
+                  <%# Demote button — shows target role %>
                   <% unless user.role == "interviewer" %>
-                    <%= button_to demote_admin_user_path(user), method: :patch, form: {
-                      class: "inline",
-                      data: { controller: "confirm", action: "submit->confirm#submit", confirm_message_value: "Demote #{user.full_name} to #{user.role == 'admin' ? 'Hiring Manager' : 'Interviewer'}?" }
-                    } do %>
-                      <span class="text-yellow-600 hover:text-yellow-800 font-medium cursor-pointer">↓ Demote</span>
-                    <% end %>
+                    <% target_role = user.role == "admin" ? "Hiring Manager" : "Interviewer" %>
+                    <button type="button"
+                            class="inline-flex items-center text-yellow-600 hover:text-yellow-800 font-medium cursor-pointer"
+                            data-action="click->role-change#showModal"
+                            data-role-change-url-param="<%= demote_admin_user_path(user) %>"
+                            data-role-change-name-param="<%= user.full_name %>"
+                            data-role-change-action-param="demote"
+                            data-role-change-target-role-param="<%= target_role %>">
+                      <svg class="w-3.5 h-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                      Demote
+                    </button>
                   <% end %>
 
                   <span class="text-gray-300">|</span>
@@ -101,6 +115,55 @@
       <p class="mt-1 text-sm text-gray-500">Add your first team member to get started.</p>
     </div>
   <% end %>
+</div>
+
+<%# Role change confirmation modal — single instance reused for all promote/demote actions %>
+<div data-role-change-target="modal"
+     data-action="click->role-change#closeOnBackdrop"
+     class="hidden fixed inset-0 z-50 overflow-y-auto"
+     aria-modal="true"
+     role="dialog">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <%# Backdrop %>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+    <%# Modal panel %>
+    <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10">
+      <div class="flex items-start">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-blue-100">
+          <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <h3 data-role-change-target="modalTitle" class="text-lg font-semibold text-gray-900">Change Role</h3>
+          <p data-role-change-target="modalBody" class="mt-2 text-sm text-gray-600">
+            Are you sure you want to change this user's role?
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end space-x-3">
+        <button type="button"
+                data-action="click->role-change#hideModal"
+                class="inline-flex items-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Cancel
+        </button>
+
+        <%# Hidden form for the actual PATCH request %>
+        <%= form_tag "", method: :patch, data: { role_change_target: "hiddenForm" }, style: "display:inline" do %>
+          <button type="button"
+                  data-role-change-target="modalConfirmBtn"
+                  data-action="click->role-change#confirmAction"
+                  class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Confirm
+          </button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <%# Deactivated Users %>

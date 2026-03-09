@@ -13,7 +13,7 @@ class InterviewPhase < ApplicationRecord
 
   belongs_to :company
   belongs_to :role
-  belongs_to :phase_owner, class_name: "User", optional: true
+  belongs_to :phase_owner, -> { unscope(where: :discarded_at) }, class_name: "User", optional: true
   belongs_to :original_phase, class_name: "InterviewPhase", optional: true
   has_many :versions, class_name: "InterviewPhase", foreign_key: :original_phase_id, dependent: :nullify
   has_many :candidate_interviews, class_name: "Interview", dependent: :destroy
