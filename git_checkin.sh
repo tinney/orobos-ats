@@ -24,7 +24,7 @@ while true; do
   end=$(date +%s)
   elapsed=$((end - start))
 
-  sleep_time=$((60 - elapsed))
+  sleep_time=$((30 - elapsed))
   if [ $sleep_time -gt 0 ]; then
     sleep $sleep_time
   fi
