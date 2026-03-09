@@ -609,6 +609,85 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==========================================
+  # Stimulus transition dropdown and confirmation UI
+  # ==========================================
+
+  test "transition buttons render inside a role-transition stimulus controller" do
+    sign_in(@admin)
+    assign_phase_owner_to(@role)
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "[data-controller='role-transition']", minimum: 1
+  end
+
+  test "transition dropdown has a toggle trigger button" do
+    sign_in(@admin)
+    assign_phase_owner_to(@role)
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "[data-action='click->role-transition#toggle']", minimum: 1
+    assert_match "Status Actions", response.body
+  end
+
+  test "transition dropdown has a hidden menu target" do
+    sign_in(@admin)
+    assign_phase_owner_to(@role)
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "[data-role-transition-target='menu']", minimum: 1
+  end
+
+  test "close transition has destructive confirmation action" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "form[data-action='submit->role-transition#confirmDestructive']", minimum: 1
+    assert_match "Close Role", response.body
+  end
+
+  test "non-destructive transitions use confirmTransition action" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "form[data-action='submit->role-transition#confirmTransition']", minimum: 1
+  end
+
+  test "close transition confirm message warns about removing from public listings" do
+    sign_in(@admin)
+    ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
+    get admin_role_path(@role)
+    assert_response :success
+    assert_match "remove it from public listings", response.body
+  end
+
+  test "delete button uses confirm stimulus controller" do
+    sign_in(@admin)
+    get admin_role_path(@role)
+    assert_response :success
+    assert_select "form[data-controller='confirm'][data-action='submit->confirm#submit']", minimum: 1
+    assert_select "form[data-confirm-message-value*='permanently remove']", minimum: 1
+  end
+
+  test "index page renders transition dropdown with stimulus controller" do
+    sign_in(@admin)
+    assign_phase_owner_to(@role)
+    get admin_roles_path
+    assert_response :success
+    assert_select "[data-controller='role-transition']", minimum: 1
+    assert_select "[data-action='click->role-transition#toggle']", minimum: 1
+  end
+
+  test "edit page renders transition dropdown" do
+    sign_in(@admin)
+    assign_phase_owner_to(@role)
+    get edit_admin_role_path(@role)
+    assert_response :success
+    assert_select "[data-controller='role-transition']", minimum: 1
+  end
+
+  # ==========================================
   # Phase owner assignment via interview phases
   # ==========================================
 
