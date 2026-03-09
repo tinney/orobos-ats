@@ -142,7 +142,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_roles_path, params: {
-      role: { title: "", status: "draft" }
+      role: {title: "", status: "draft"}
     }
 
     assert_response :unprocessable_entity
@@ -180,7 +180,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_role_path(@role), params: {
-      role: { title: "Senior Software Engineer", location: "New York, NY" }
+      role: {title: "Senior Software Engineer", location: "New York, NY"}
     }
 
     assert_redirected_to admin_role_path(@role)
@@ -193,7 +193,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_role_path(@role), params: {
-      role: { title: "" }
+      role: {title: ""}
     }
 
     assert_response :unprocessable_entity
@@ -203,7 +203,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_role_path(@role), params: {
-      role: { status: "published" }
+      role: {status: "published"}
     }
 
     assert_redirected_to admin_role_path(@role)
@@ -215,7 +215,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@hiring_manager)
 
     patch admin_role_path(@role), params: {
-      role: { title: "Updated Title" }
+      role: {title: "Updated Title"}
     }
 
     assert_redirected_to admin_role_path(@role)
@@ -279,7 +279,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     end
 
     sign_in(@admin)
-    patch admin_role_path(other_role), params: { role: { title: "Hacked" } }
+    patch admin_role_path(other_role), params: {role: {title: "Hacked"}}
     assert_response :not_found
   end
 
@@ -296,13 +296,13 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     get new_admin_role_path
     assert_redirected_to tenant_root_path
 
-    post admin_roles_path, params: { role: { title: "Hack", status: "draft" } }
+    post admin_roles_path, params: {role: {title: "Hack", status: "draft"}}
     assert_redirected_to tenant_root_path
 
     get edit_admin_role_path(@role)
     assert_redirected_to tenant_root_path
 
-    patch admin_role_path(@role), params: { role: { title: "Hacked" } }
+    patch admin_role_path(@role), params: {role: {title: "Hacked"}}
     assert_redirected_to tenant_root_path
   end
 
@@ -325,7 +325,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_roles_path, params: {
-      role: { title: "Bad Salary", status: "draft", salary_min: 100_000, salary_max: 50_000 }
+      role: {title: "Bad Salary", status: "draft", salary_min: 100_000, salary_max: 50_000}
     }
 
     assert_response :unprocessable_entity
@@ -335,7 +335,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_roles_path, params: {
-      role: { title: "Some Role", status: "bogus" }
+      role: {title: "Some Role", status: "bogus"}
     }
 
     assert_response :unprocessable_entity
@@ -390,7 +390,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   test "transition publishes a draft role with phase owner" do
     sign_in(@admin)
     assign_phase_owner_to(@role)
-    patch transition_admin_role_path(@role), params: { status: "published" }
+    patch transition_admin_role_path(@role), params: {status: "published"}
     assert_redirected_to admin_role_path(@role)
     assert_match "Published", flash[:notice]
     @role.reload
@@ -399,7 +399,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
 
   test "transition rejects publishing without phase owner" do
     sign_in(@admin)
-    patch transition_admin_role_path(@role), params: { status: "published" }
+    patch transition_admin_role_path(@role), params: {status: "published"}
     assert_redirected_to admin_role_path(@role)
     assert_match "at least one interview phase must have a phase owner", flash[:alert]
     @role.reload
@@ -409,7 +409,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   test "transition makes a published role internal only" do
     sign_in(@admin)
     ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
-    patch transition_admin_role_path(@role), params: { status: "internal_only" }
+    patch transition_admin_role_path(@role), params: {status: "internal_only"}
     assert_redirected_to admin_role_path(@role)
     @role.reload
     assert_equal "internal_only", @role.status
@@ -418,7 +418,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   test "transition closes a published role" do
     sign_in(@admin)
     ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
-    patch transition_admin_role_path(@role), params: { status: "closed" }
+    patch transition_admin_role_path(@role), params: {status: "closed"}
     assert_redirected_to admin_role_path(@role)
     @role.reload
     assert_equal "closed", @role.status
@@ -427,7 +427,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   test "transition rejects invalid transition" do
     sign_in(@admin)
     # draft cannot go directly to closed
-    patch transition_admin_role_path(@role), params: { status: "closed" }
+    patch transition_admin_role_path(@role), params: {status: "closed"}
     assert_redirected_to admin_role_path(@role)
     assert_match "Cannot transition", flash[:alert]
     @role.reload
@@ -438,7 +438,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
     ActsAsTenant.with_tenant(@company) { @role.update!(status: "published") }
     ActsAsTenant.with_tenant(@company) { @role.update!(status: "closed") }
-    patch transition_admin_role_path(@role), params: { status: "published" }
+    patch transition_admin_role_path(@role), params: {status: "published"}
     assert_redirected_to admin_role_path(@role)
     assert_match "Cannot transition", flash[:alert]
     @role.reload
@@ -448,7 +448,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
   test "hiring manager can trigger transitions" do
     sign_in(@hiring_manager)
     assign_phase_owner_to(@role)
-    patch transition_admin_role_path(@role), params: { status: "published" }
+    patch transition_admin_role_path(@role), params: {status: "published"}
     assert_redirected_to admin_role_path(@role)
     @role.reload
     assert_equal "published", @role.status
@@ -456,7 +456,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
 
   test "interviewer cannot trigger transitions" do
     sign_in(@interviewer)
-    patch transition_admin_role_path(@role), params: { status: "published" }
+    patch transition_admin_role_path(@role), params: {status: "published"}
     assert_redirected_to tenant_root_path
     @role.reload
     assert_equal "draft", @role.status
@@ -469,7 +469,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     end
 
     sign_in(@admin)
-    patch transition_admin_role_path(other_role), params: { status: "published" }
+    patch transition_admin_role_path(other_role), params: {status: "published"}
     assert_response :not_found
   end
 
@@ -547,7 +547,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@company) do
       phase = @role.interview_phases.active.first
       patch admin_role_interview_phase_path(@role, phase), params: {
-        interview_phase: { phase_owner_id: @admin.id }
+        interview_phase: {phase_owner_id: @admin.id}
       }
       assert_redirected_to admin_role_path(@role)
       phase.reload
@@ -561,7 +561,7 @@ class Admin::RolesControllerTest < ActionDispatch::IntegrationTest
       phase = @role.interview_phases.active.first
       phase.update!(phase_owner: @admin)
       patch admin_role_interview_phase_path(@role, phase), params: {
-        interview_phase: { phase_owner_id: "" }
+        interview_phase: {phase_owner_id: ""}
       }
       assert_redirected_to admin_role_path(@role)
       phase.reload

@@ -92,7 +92,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin can create users" do
     sign_in(@admin)
     post admin_users_path, params: {
-      user: { email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer" }
+      user: {email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer"}
     }
     assert_redirected_to admin_users_path
   end
@@ -100,7 +100,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "hiring_manager cannot create users" do
     sign_in(@hiring_manager)
     post admin_users_path, params: {
-      user: { email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer" }
+      user: {email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -108,7 +108,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create users" do
     sign_in(@interviewer)
     post admin_users_path, params: {
-      user: { email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer" }
+      user: {email: "new@authcorp.com", first_name: "New", last_name: "User", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -192,7 +192,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin can create roles" do
     sign_in(@admin)
     post admin_roles_path, params: {
-      role: { title: "Product Manager", status: "draft" }
+      role: {title: "Product Manager", status: "draft"}
     }
     assert_redirected_to admin_roles_path
   end
@@ -200,7 +200,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "hiring_manager can create roles" do
     sign_in(@hiring_manager)
     post admin_roles_path, params: {
-      role: { title: "Product Manager", status: "draft" }
+      role: {title: "Product Manager", status: "draft"}
     }
     assert_redirected_to admin_roles_path
   end
@@ -208,7 +208,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create roles" do
     sign_in(@interviewer)
     post admin_roles_path, params: {
-      role: { title: "Product Manager", status: "draft" }
+      role: {title: "Product Manager", status: "draft"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -264,7 +264,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
 
   test "admin can transition application" do
     sign_in(@admin)
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to admin_application_path(@application)
     @application.reload
     assert_equal "interviewing", @application.status
@@ -272,7 +272,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
 
   test "hiring_manager can transition application" do
     sign_in(@hiring_manager)
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to admin_application_path(@application)
     @application.reload
     assert_equal "interviewing", @application.status
@@ -280,7 +280,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
 
   test "interviewer cannot transition application" do
     sign_in(@interviewer)
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to tenant_root_path
     @application.reload
     assert_equal "applied", @application.status
@@ -315,7 +315,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin can create offer" do
     sign_in(@admin)
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft" }
+      offer: {salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft"}
     }
     assert_response :redirect
     refute_redirected_to_authorization_denied
@@ -324,7 +324,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "hiring_manager can create offer" do
     sign_in(@hiring_manager)
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft" }
+      offer: {salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft"}
     }
     assert_response :redirect
     refute_redirected_to_authorization_denied
@@ -333,7 +333,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create offer" do
     sign_in(@interviewer)
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft" }
+      offer: {salary: 100_000, salary_currency: "USD", start_date: 1.month.from_now.to_date, status: "draft"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -345,7 +345,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin can create interview phase" do
     sign_in(@admin)
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Culture Fit" }
+      interview_phase: {name: "Culture Fit"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -353,7 +353,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "hiring_manager can create interview phase" do
     sign_in(@hiring_manager)
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Culture Fit" }
+      interview_phase: {name: "Culture Fit"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -361,7 +361,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create interview phase" do
     sign_in(@interviewer)
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Culture Fit" }
+      interview_phase: {name: "Culture Fit"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -373,7 +373,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "admin can create custom question" do
     sign_in(@admin)
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "Why us?", field_type: "text", required: true }
+      custom_question: {label: "Why us?", field_type: "text", required: true}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -381,7 +381,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "hiring_manager can create custom question" do
     sign_in(@hiring_manager)
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "Why us?", field_type: "text", required: true }
+      custom_question: {label: "Why us?", field_type: "text", required: true}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -389,7 +389,7 @@ class AuthorizationTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create custom question" do
     sign_in(@interviewer)
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "Why us?", field_type: "text", required: true }
+      custom_question: {label: "Why us?", field_type: "text", required: true}
     }
     assert_redirected_to tenant_root_path
   end

@@ -13,8 +13,8 @@ class AddVersioningToInterviewPhases < ActiveRecord::Migration[8.1]
     remove_index :interview_phases, [:role_id, :name]
     # Add a unique constraint only for active (non-archived) phases
     add_index :interview_phases, [:role_id, :name],
-              unique: true,
-              where: "archived_at IS NULL",
-              name: "index_interview_phases_active_unique_name"
+      unique: true,
+      where: "archived_at IS NULL",
+      name: "index_interview_phases_active_unique_name"
   end
 end

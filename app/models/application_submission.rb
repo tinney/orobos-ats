@@ -37,10 +37,10 @@ class ApplicationSubmission < ApplicationRecord
   has_many :offers, foreign_key: :offer_application_id, dependent: :destroy
   has_one_attached :resume
 
-  validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :candidate_id, uniqueness: { scope: :role_id, message: "has already applied for this role" }
-  validates :rejection_reason, inclusion: { in: REJECTION_REASONS }, allow_blank: true
-  validates :withdrawal_reason, inclusion: { in: WITHDRAWAL_REASONS }, allow_blank: true
+  validates :status, presence: true, inclusion: {in: STATUSES}
+  validates :candidate_id, uniqueness: {scope: :role_id, message: "has already applied for this role"}
+  validates :rejection_reason, inclusion: {in: REJECTION_REASONS}, allow_blank: true
+  validates :withdrawal_reason, inclusion: {in: WITHDRAWAL_REASONS}, allow_blank: true
   validate :resume_format, if: -> { resume.attached? }
 
   scope :active, -> { where(status: ACTIVE_STATUSES) }

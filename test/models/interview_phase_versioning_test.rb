@@ -55,7 +55,7 @@ class InterviewPhaseVersioningTest < ActiveSupport::TestCase
       status: "complete"
     )
 
-    new_phase = @phase.update_with_versioning(name: "Updated Phone Screen")
+    @phase.update_with_versioning(name: "Updated Phone Screen")
 
     # Old interview remains linked to the archived phase
     interview.reload
@@ -84,7 +84,7 @@ class InterviewPhaseVersioningTest < ActiveSupport::TestCase
       rating: 4
     )
 
-    new_phase = @phase.update_with_versioning(name: "Updated Phone Screen")
+    @phase.update_with_versioning(name: "Updated Phone Screen")
 
     # Scorecard and ratings remain intact on old interview/phase
     scorecard.reload
@@ -109,7 +109,7 @@ class InterviewPhaseVersioningTest < ActiveSupport::TestCase
     interview.assign_interviewer!(@interviewer)
     interview.add_panel_member!(@admin)
 
-    new_phase = @phase.update_with_versioning(name: "New Phone Screen")
+    @phase.update_with_versioning(name: "New Phone Screen")
 
     interview.reload
     assert interview.interviewers.include?(@interviewer)
@@ -155,7 +155,7 @@ class InterviewPhaseVersioningTest < ActiveSupport::TestCase
       scheduled_at: 1.day.from_now
     )
 
-    new_phase = @phase.create_new_version(name: "Updated Phone Screen")
+    @phase.create_new_version(name: "Updated Phone Screen")
 
     @application.reload
     # Application keeps reference to archived phase because it has interview data

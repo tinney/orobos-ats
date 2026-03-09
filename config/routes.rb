@@ -2,13 +2,13 @@
 
 Rails.application.routes.draw do
   # Health check — available on all domains
-  get "up" => "rails/health#show", as: :rails_health_check
+  get "up" => "rails/health#show", :as => :rails_health_check
 
   # Tenant-scoped routes (requests with a valid subdomain)
   constraints Constraints::SubdomainConstraint.new do
     # Authentication — magic link login
-    get  "login",  to: "magic_links#new",  as: :login
-    post "login",  to: "magic_links#create"
+    get "login", to: "magic_links#new", as: :login
+    post "login", to: "magic_links#create"
     delete "logout", to: "sessions#destroy", as: :logout
 
     # Admin namespace — team management, settings
@@ -101,13 +101,13 @@ Rails.application.routes.draw do
   end
 
   # Authentication callback — works on any domain (magic link lands here)
-  get    "auth/callback", to: "sessions#create",  as: :auth_callback
-  delete "auth/logout",   to: "sessions#destroy", as: :auth_logout
+  get "auth/callback", to: "sessions#create", as: :auth_callback
+  delete "auth/logout", to: "sessions#destroy", as: :auth_logout
 
   # Root-domain routes (marketing site / tenant signup, no subdomain)
-  get  "signup",         to: "signups#new",     as: :signup
-  post "signup",         to: "signups#create"
-  get  "signup/success/:tenant_subdomain", to: "signups#success", as: :signup_success
+  get "signup", to: "signups#new", as: :signup
+  post "signup", to: "signups#create"
+  get "signup/success/:tenant_subdomain", to: "signups#success", as: :signup_success
 
   root "marketing#index"
 end

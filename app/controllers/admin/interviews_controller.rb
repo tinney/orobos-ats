@@ -6,7 +6,7 @@ module Admin
   class InterviewsController < BaseController
     # Override inherited admin requirement — accessible to hiring managers and above,
     # except schedule which is accessible to any authenticated user (panel membership checked separately)
-    self._required_roles = [{ role: "hiring_manager", except: [:schedule] }, { role: "interviewer", only: [:schedule] }]
+    self._required_roles = [{role: "hiring_manager", except: [:schedule]}, {role: "interviewer", only: [:schedule]}]
 
     before_action :set_application
     before_action :set_interview_phase
@@ -33,10 +33,10 @@ module Admin
       if participant.new_record?
         participant.save!
         redirect_back fallback_location: admin_role_path(@application.role),
-                      notice: "#{user.full_name} has been assigned as interviewer."
+          notice: "#{user.full_name} has been assigned as interviewer."
       else
         redirect_back fallback_location: admin_role_path(@application.role),
-                      alert: "#{user.full_name} is already assigned to this interview."
+          alert: "#{user.full_name} is already assigned to this interview."
       end
     end
 
@@ -48,7 +48,7 @@ module Admin
 
       if scheduled_at.blank?
         redirect_back fallback_location: admin_role_path(@application.role),
-                      alert: "Please provide a date and time for the interview."
+          alert: "Please provide a date and time for the interview."
         return
       end
 
@@ -58,21 +58,21 @@ module Admin
       parsed_time = Time.zone.parse(scheduled_at)
       @interview.schedule!(parsed_time)
       redirect_back fallback_location: admin_role_path(@application.role),
-                    notice: "Interview time slot has been updated."
+        notice: "Interview time slot has been updated."
     end
 
     # PATCH /admin/applications/:application_id/interview_phases/:interview_phase_id/interview/complete
     def complete
       @interview.complete!
       redirect_back fallback_location: admin_application_path(@application),
-                    notice: "Interview marked as complete."
+        notice: "Interview marked as complete."
     end
 
     # PATCH /admin/applications/:application_id/interview_phases/:interview_phase_id/interview/cancel
     def cancel
       @interview.cancel!
       redirect_back fallback_location: admin_application_path(@application),
-                    notice: "Interview cancelled."
+        notice: "Interview cancelled."
     end
 
     # DELETE /admin/applications/:application_id/interview_phases/:interview_phase_id/interview/remove_participant
@@ -81,7 +81,7 @@ module Admin
       participant.destroy!
 
       redirect_back fallback_location: admin_role_path(@application.role),
-                    notice: "Interviewer has been removed from this interview."
+        notice: "Interviewer has been removed from this interview."
     end
 
     private
@@ -105,7 +105,7 @@ module Admin
       return if @interview.panel_member?(current_user)
 
       redirect_back fallback_location: tenant_root_path,
-                    alert: "Only assigned interviewers can modify this interview."
+        alert: "Only assigned interviewers can modify this interview."
     end
   end
 end

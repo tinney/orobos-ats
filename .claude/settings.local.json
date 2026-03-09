@@ -5,7 +5,14 @@
       "mcp__plugin_ouroboros_ouroboros__ouroboros_generate_seed",
       "mcp__plugin_ouroboros_ouroboros__ouroboros_execute_seed",
       "Bash(bin/rails test:*)",
-      "Bash(bin/rails runner:*)"
+      "Bash(bin/rails runner:*)",
+      "mcp__plugin_ouroboros_ouroboros__ouroboros_evaluate",
+      "Bash(bundle install:*)",
+      "Bash(bundle list:*)",
+      "Bash(bundle exec:*)",
+      "Bash(bundle info:*)",
+      "Bash(bundle update:*)",
+      "Bash(SRB_YES=1 bundle exec:*)"
     ]
   }
 }

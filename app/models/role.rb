@@ -5,10 +5,10 @@ class Role < ApplicationRecord
 
   # Allowed state transitions: current_status => [allowed_next_statuses]
   TRANSITIONS = {
-    "draft"         => %w[published internal_only],
-    "published"     => %w[internal_only closed draft],
+    "draft" => %w[published internal_only],
+    "published" => %w[internal_only closed draft],
     "internal_only" => %w[published closed draft],
-    "closed"        => %w[draft]
+    "closed" => %w[draft]
   }.freeze
 
   belongs_to :company
@@ -27,10 +27,10 @@ class Role < ApplicationRecord
   after_create :seed_default_interview_phases
 
   validates :title, presence: true
-  validates :slug, presence: true, uniqueness: { scope: :company_id }
-  validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :salary_min, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
-  validates :salary_max, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :slug, presence: true, uniqueness: {scope: :company_id}
+  validates :status, presence: true, inclusion: {in: STATUSES}
+  validates :salary_min, numericality: {only_integer: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :salary_max, numericality: {only_integer: true, greater_than_or_equal_to: 0}, allow_nil: true
   validate :salary_max_greater_than_or_equal_to_min
 
   scope :published, -> { where(status: "published") }

@@ -37,12 +37,12 @@ class TenantSignupService
     Result.new(success?: false, company: company, user: user, errors: errors)
   rescue ActiveRecord::RecordNotUnique => e
     message = if e.message.include?("subdomain")
-                "Subdomain has already been taken"
+      "Subdomain has already been taken"
     elsif e.message.include?("email")
-                "Email has already been taken"
+      "Email has already been taken"
     else
-                "A record with that value already exists"
+      "A record with that value already exists"
     end
-    Result.new(success?: false, company: nil, user: nil, errors: [ message ])
+    Result.new(success?: false, company: nil, user: nil, errors: [message])
   end
 end

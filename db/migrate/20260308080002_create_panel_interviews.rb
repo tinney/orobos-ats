@@ -1,8 +1,8 @@
 class CreatePanelInterviews < ActiveRecord::Migration[8.1]
   def change
     create_table :panel_interviews, id: :uuid do |t|
-      t.references :interview, null: false, foreign_key: { on_delete: :cascade }, type: :uuid
-      t.references :user, null: false, foreign_key: { on_delete: :cascade }, type: :uuid
+      t.references :interview, null: false, foreign_key: {on_delete: :cascade}, type: :uuid
+      t.references :user, null: false, foreign_key: {on_delete: :cascade}, type: :uuid
 
       t.timestamps
     end

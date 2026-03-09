@@ -16,7 +16,7 @@ class SignupsController < PublicController
 
     if result.success?
       redirect_to signup_success_path(tenant_subdomain: result.company.subdomain),
-                  notice: "Your account has been created! Check your email to sign in."
+        notice: "Your account has been created! Check your email to sign in."
     else
       flash.now[:alert] = result.errors.join(", ")
       @form_data = signup_params
@@ -31,6 +31,6 @@ class SignupsController < PublicController
   private
 
   def signup_params
-    params.expect(signup: [ :company_name, :subdomain, :admin_email, :admin_first_name, :admin_last_name ])
+    params.expect(signup: [:company_name, :subdomain, :admin_email, :admin_first_name, :admin_last_name])
   end
 end

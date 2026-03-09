@@ -118,7 +118,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     assert_redirected_to tenant_root_path, "HM should be denied new user form"
 
     post admin_users_path, params: {
-      user: { email: "denied@additive.com", first_name: "D", last_name: "D", role: "interviewer" }
+      user: {email: "denied@additive.com", first_name: "D", last_name: "D", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path, "HM should be denied user creation"
 
@@ -136,7 +136,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     assert_redirected_to tenant_root_path, "Interviewer should be denied user list"
 
     post admin_users_path, params: {
-      user: { email: "denied@additive.com", first_name: "D", last_name: "D", role: "interviewer" }
+      user: {email: "denied@additive.com", first_name: "D", last_name: "D", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path, "Interviewer should be denied user creation"
 
@@ -183,7 +183,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     assert_response :success, "HM should access edit role form"
 
     post admin_roles_path, params: {
-      role: { title: "HM Created Role", location: "NYC" }
+      role: {title: "HM Created Role", location: "NYC"}
     }
     assert_response :redirect, "HM should create roles"
   end
@@ -201,7 +201,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     assert_redirected_to tenant_root_path, "Interviewer should be denied role detail"
 
     post admin_roles_path, params: {
-      role: { title: "Should Fail", location: "NYC" }
+      role: {title: "Should Fail", location: "NYC"}
     }
     assert_redirected_to tenant_root_path, "Interviewer should be denied role creation"
   end
@@ -243,7 +243,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
   test "admin can transition applications" do
     sign_in(@admin)
 
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to admin_application_path(@application)
     @application.reload
     assert_equal "interviewing", @application.status
@@ -252,7 +252,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
   test "hiring_manager can transition applications" do
     sign_in(@hm)
 
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to admin_application_path(@application)
     @application.reload
     assert_equal "interviewing", @application.status
@@ -261,7 +261,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
   test "interviewer is denied application transitions" do
     sign_in(@interviewer)
 
-    patch transition_admin_application_path(@application), params: { status: "interviewing" }
+    patch transition_admin_application_path(@application), params: {status: "interviewing"}
     assert_redirected_to tenant_root_path
     @application.reload
     assert_equal "applied", @application.status, "Application status should remain unchanged"
@@ -304,7 +304,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     post assign_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { user_id: @hm.id }
+    ), params: {user_id: @hm.id}
 
     assert_response :redirect
     assert_not_equal tenant_root_path, response.location.split("additive.example.com").last
@@ -324,7 +324,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     post assign_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { user_id: new_user.id }
+    ), params: {user_id: new_user.id}
 
     assert_response :redirect
   end
@@ -335,7 +335,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     post assign_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { user_id: @target_user.id }
+    ), params: {user_id: @target_user.id}
 
     assert_redirected_to tenant_root_path
   end
@@ -411,7 +411,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Admin Phase" }
+      interview_phase: {name: "Admin Phase"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -420,7 +420,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@hm)
 
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "HM Phase" }
+      interview_phase: {name: "HM Phase"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -429,7 +429,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@interviewer)
 
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Should Fail" }
+      interview_phase: {name: "Should Fail"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -440,7 +440,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "Admin Q", field_type: "text" }
+      custom_question: {label: "Admin Q", field_type: "text"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -449,7 +449,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@hm)
 
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "HM Q", field_type: "text" }
+      custom_question: {label: "HM Q", field_type: "text"}
     }
     assert_redirected_to admin_role_path(@role)
   end
@@ -458,7 +458,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@interviewer)
 
     post admin_role_custom_questions_path(@role), params: {
-      custom_question: { label: "Should Fail", field_type: "text" }
+      custom_question: {label: "Should Fail", field_type: "text"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -469,7 +469,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending" }
+      offer: {salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending"}
     }
     assert_redirected_to admin_application_path(@application)
   end
@@ -478,7 +478,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@hm)
 
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending" }
+      offer: {salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending"}
     }
     assert_redirected_to admin_application_path(@application)
   end
@@ -487,7 +487,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@interviewer)
 
     post admin_application_offers_path(@application), params: {
-      offer: { salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending" }
+      offer: {salary: 100000, salary_currency: "USD", start_date: 30.days.from_now.to_date, status: "pending"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -565,7 +565,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
         scorecard: {
           notes: "Great candidate",
           scorecard_categories_attributes: {
-            "0" => { name: "Technical", rating: 4 }
+            "0" => {name: "Technical", rating: 4}
           }
         }
       }
@@ -581,7 +581,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     patch schedule_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { scheduled_at: 2.days.from_now.iso8601 }
+    ), params: {scheduled_at: 2.days.from_now.iso8601}
 
     assert_response :redirect
     @interview.reload
@@ -594,7 +594,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     patch schedule_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { scheduled_at: 2.days.from_now.iso8601 }
+    ), params: {scheduled_at: 2.days.from_now.iso8601}
 
     assert_response :redirect
     @interview.reload
@@ -607,7 +607,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     patch schedule_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { scheduled_at: 2.days.from_now.iso8601 }
+    ), params: {scheduled_at: 2.days.from_now.iso8601}
 
     assert_response :redirect
     @interview.reload
@@ -627,7 +627,7 @@ class AdditiveHierarchyTest < ActionDispatch::IntegrationTest
     patch schedule_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: @phase.id
-    ), params: { scheduled_at: 2.days.from_now.iso8601 }
+    ), params: {scheduled_at: 2.days.from_now.iso8601}
 
     # Should be denied by require_panel_member
     assert_response :redirect

@@ -34,7 +34,7 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
 
   test "POST /login with valid email sends magic link and shows generic message" do
     assert_enqueued_emails 1 do
-      post login_url(subdomain: "testcorp"), params: { email: "admin@testcorp.com" }
+      post login_url(subdomain: "testcorp"), params: {email: "admin@testcorp.com"}
     end
 
     assert_redirected_to login_url(subdomain: "testcorp")
@@ -44,7 +44,7 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
 
   test "POST /login with unknown email shows same generic message (no enumeration)" do
     assert_no_enqueued_emails do
-      post login_url(subdomain: "testcorp"), params: { email: "unknown@example.com" }
+      post login_url(subdomain: "testcorp"), params: {email: "unknown@example.com"}
     end
 
     assert_redirected_to login_url(subdomain: "testcorp")
@@ -53,7 +53,7 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /login with blank email shows error" do
-    post login_url(subdomain: "testcorp"), params: { email: "" }
+    post login_url(subdomain: "testcorp"), params: {email: ""}
     assert_response :unprocessable_entity
     assert_select ".text-red-800", /enter your email/i
   end
@@ -62,7 +62,7 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@company) { @user.discard! }
 
     assert_no_enqueued_emails do
-      post login_url(subdomain: "testcorp"), params: { email: "admin@testcorp.com" }
+      post login_url(subdomain: "testcorp"), params: {email: "admin@testcorp.com"}
     end
 
     # Still shows generic message
@@ -70,7 +70,7 @@ class MagicLinksControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /login generates a valid magic link token on user" do
-    post login_url(subdomain: "testcorp"), params: { email: "admin@testcorp.com" }
+    post login_url(subdomain: "testcorp"), params: {email: "admin@testcorp.com"}
 
     @user.reload
     assert_not_nil @user.magic_link_token_digest

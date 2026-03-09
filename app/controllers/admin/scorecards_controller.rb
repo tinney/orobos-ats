@@ -2,7 +2,7 @@
 
 module Admin
   class ScorecardsController < BaseController
-    self._required_roles = [{ role: "interviewer" }]
+    self._required_roles = [{role: "interviewer"}]
 
     before_action :set_interview
     before_action :set_scorecard, only: [:edit, :update]

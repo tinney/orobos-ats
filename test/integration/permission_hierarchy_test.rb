@@ -117,7 +117,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
 
     assert_difference -> { ActsAsTenant.with_tenant(@company) { User.count } }, 1 do
       post admin_users_path, params: {
-        user: { email: "new@hierarchy.com", first_name: "New", last_name: "User", role: "interviewer" }
+        user: {email: "new@hierarchy.com", first_name: "New", last_name: "User", role: "interviewer"}
       }
     end
 
@@ -129,7 +129,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { ActsAsTenant.with_tenant(@company) { User.count } } do
       post admin_users_path, params: {
-        user: { email: "hm-created@hierarchy.com", first_name: "HM", last_name: "Created", role: "interviewer" }
+        user: {email: "hm-created@hierarchy.com", first_name: "HM", last_name: "Created", role: "interviewer"}
       }
     end
 
@@ -141,7 +141,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { ActsAsTenant.with_tenant(@company) { User.count } } do
       post admin_users_path, params: {
-        user: { email: "int-created@hierarchy.com", first_name: "Int", last_name: "Created", role: "interviewer" }
+        user: {email: "int-created@hierarchy.com", first_name: "Int", last_name: "Created", role: "interviewer"}
       }
     end
 
@@ -173,7 +173,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
   test "admin can update users" do
     sign_in(@admin)
     patch admin_user_path(@target_user), params: {
-      user: { first_name: "Updated" }
+      user: {first_name: "Updated"}
     }
     assert_redirected_to admin_users_path
     @target_user.reload
@@ -183,7 +183,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
   test "hiring_manager is denied user update" do
     sign_in(@hiring_manager)
     patch admin_user_path(@target_user), params: {
-      user: { first_name: "Hacked" }
+      user: {first_name: "Hacked"}
     }
     assert_redirected_to tenant_root_path
     @target_user.reload
@@ -193,7 +193,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
   test "interviewer is denied user update" do
     sign_in(@interviewer)
     patch admin_user_path(@target_user), params: {
-      user: { first_name: "Hacked" }
+      user: {first_name: "Hacked"}
     }
     assert_redirected_to tenant_root_path
     @target_user.reload
@@ -333,7 +333,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
 
     # Create
     post admin_users_path, params: {
-      user: { email: "x@x.com", first_name: "X", last_name: "Y", role: "interviewer" }
+      user: {email: "x@x.com", first_name: "X", last_name: "Y", role: "interviewer"}
     }
     assert_response :redirect
 
@@ -342,7 +342,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     # Update
-    patch admin_user_path(@target_user), params: { user: { first_name: "X" } }
+    patch admin_user_path(@target_user), params: {user: {first_name: "X"}}
     assert_response :redirect
 
     # Promote
@@ -479,11 +479,11 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@hiring_manager)
 
     post admin_users_path, params: {
-      user: { email: "denied@hierarchy.com", first_name: "D", last_name: "D", role: "interviewer" }
+      user: {email: "denied@hierarchy.com", first_name: "D", last_name: "D", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path
 
-    patch admin_user_path(@target_user), params: { user: { first_name: "D" } }
+    patch admin_user_path(@target_user), params: {user: {first_name: "D"}}
     assert_redirected_to tenant_root_path
 
     patch promote_admin_user_path(@target_user)
@@ -516,11 +516,11 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
     sign_in(@interviewer)
 
     post admin_users_path, params: {
-      user: { email: "denied@hierarchy.com", first_name: "D", last_name: "D", role: "interviewer" }
+      user: {email: "denied@hierarchy.com", first_name: "D", last_name: "D", role: "interviewer"}
     }
     assert_redirected_to tenant_root_path
 
-    patch admin_user_path(@target_user), params: { user: { first_name: "D" } }
+    patch admin_user_path(@target_user), params: {user: {first_name: "D"}}
     assert_redirected_to tenant_root_path
 
     patch promote_admin_user_path(@target_user)
@@ -550,7 +550,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     # Mutation endpoints
-    patch admin_user_path(@target_user), params: { user: { first_name: "AdminUpdated" } }
+    patch admin_user_path(@target_user), params: {user: {first_name: "AdminUpdated"}}
     assert_redirected_to admin_users_path
 
     patch promote_admin_user_path(@target_user)
@@ -566,7 +566,7 @@ class PermissionHierarchyTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_users_path
 
     post admin_users_path, params: {
-      user: { email: "admin-created@hierarchy.com", first_name: "A", last_name: "C", role: "interviewer" }
+      user: {email: "admin-created@hierarchy.com", first_name: "A", last_name: "C", role: "interviewer"}
     }
     assert_redirected_to admin_users_path
   end

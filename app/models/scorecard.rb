@@ -7,7 +7,7 @@ class Scorecard < ApplicationRecord
 
   accepts_nested_attributes_for :scorecard_categories, allow_destroy: true
 
-  validates :user_id, uniqueness: { scope: :interview_id }
+  validates :user_id, uniqueness: {scope: :interview_id}
 
   def average_rating
     return nil if scorecard_categories.empty?

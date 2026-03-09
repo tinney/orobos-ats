@@ -39,8 +39,8 @@ class SessionsController < PublicController
     # Redirect to the user's tenant subdomain dashboard
     tenant_root = root_url(subdomain: user.company.subdomain)
     redirect_to tenant_root,
-                notice: "Welcome back, #{user.first_name}!",
-                allow_other_host: true
+      notice: "Welcome back, #{user.first_name}!",
+      allow_other_host: true
   end
 
   # DELETE /auth/logout or /logout

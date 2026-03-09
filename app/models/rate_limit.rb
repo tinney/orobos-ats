@@ -3,14 +3,14 @@
 class RateLimit < ApplicationRecord
   # Configurable thresholds per action type
   THRESHOLDS = {
-    "apply" => { limit: 10, window: 1.hour },
-    "magic_link" => { limit: 5, window: 15.minutes }
+    "apply" => {limit: 10, window: 1.hour},
+    "magic_link" => {limit: 5, window: 15.minutes}
   }.freeze
 
-  DEFAULT_THRESHOLD = { limit: 10, window: 1.hour }.freeze
+  DEFAULT_THRESHOLD = {limit: 10, window: 1.hour}.freeze
 
   validates :key, presence: true
-  validates :count, numericality: { greater_than_or_equal_to: 0 }
+  validates :count, numericality: {greater_than_or_equal_to: 0}
   validates :window_start, presence: true
 
   # Check if a key has exceeded the limit within the current window.
@@ -18,7 +18,7 @@ class RateLimit < ApplicationRecord
   # the configured threshold. Falls back to DEFAULT_THRESHOLD if not found.
   def self.exceeded?(key, limit: nil, window: nil)
     config = threshold_for(key)
-    limit  ||= config[:limit]
+    limit ||= config[:limit]
     window ||= config[:window]
     window_start = compute_window_start(window)
 
@@ -46,7 +46,7 @@ class RateLimit < ApplicationRecord
     window = config[:window]
     window_start = compute_window_start(window)
     seconds_remaining = ((window_start + window.to_i) - Time.current).ceil
-    [ seconds_remaining, 1 ].max
+    [seconds_remaining, 1].max
   end
 
   # Clean up old rate limit records to prevent unbounded table growth

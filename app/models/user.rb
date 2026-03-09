@@ -12,14 +12,14 @@ class User < ApplicationRecord
   has_many :panel_assigned_interviews, through: :panel_interviews, source: :interview
 
   validates :email, presence: true,
-                    uniqueness: { case_sensitive: false },
-                    format: { with: URI::MailTo::EMAIL_REGEXP }
+    uniqueness: {case_sensitive: false},
+    format: {with: URI::MailTo::EMAIL_REGEXP}
   validates :first_name, presence: true
   validates :last_name, presence: true
-  validates :role, presence: true, inclusion: { in: ROLES }
+  validates :role, presence: true, inclusion: {in: ROLES}
   validates :time_zone, presence: true,
-                        inclusion: { in: ->(_) { ActiveSupport::TimeZone::MAPPING.keys },
-                                     message: "is not a recognized timezone" }
+    inclusion: {in: ->(_) { ActiveSupport::TimeZone::MAPPING.keys },
+                message: "is not a recognized timezone"}
 
   before_validation :normalize_email
 
@@ -85,7 +85,7 @@ class User < ApplicationRecord
   end
 
   # Role hierarchy: admin > hiring_manager > interviewer
-  ROLE_HIERARCHY = { "admin" => 3, "hiring_manager" => 2, "interviewer" => 1 }.freeze
+  ROLE_HIERARCHY = {"admin" => 3, "hiring_manager" => 2, "interviewer" => 1}.freeze
 
   def at_least_hiring_manager?
     admin? || hiring_manager?

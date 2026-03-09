@@ -36,12 +36,12 @@ module Authorization
     def require_role(role, **opts)
       role = role.to_s
       unless User::ROLE_HIERARCHY.key?(role)
-        raise ArgumentError, "Unknown role: #{role}. Must be one of: #{User::ROLE_HIERARCHY.keys.join(', ')}"
+        raise ArgumentError, "Unknown role: #{role}. Must be one of: #{User::ROLE_HIERARCHY.keys.join(", ")}"
       end
 
       # Duplicate the inherited array so we don't mutate the parent's
       self._required_roles = _required_roles.dup
-      _required_roles << { role: role, **opts }
+      _required_roles << {role: role, **opts}
     end
   end
 
@@ -110,7 +110,7 @@ module Authorization
   def authorization_denied
     respond_to do |format|
       format.html { redirect_to tenant_root_path, alert: "You are not authorized to access this page." }
-      format.json { render json: { error: "Unauthorized" }, status: :forbidden }
+      format.json { render json: {error: "Unauthorized"}, status: :forbidden }
     end
   end
 end

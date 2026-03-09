@@ -4,7 +4,7 @@ module Admin
   class ApplicationsController < BaseController
     # Hiring managers and above can view and manage applications.
     # Destroy (hard delete) requires admin.
-    self._required_roles = [{ role: "hiring_manager" }, { role: "admin", only: [:destroy] }]
+    self._required_roles = [{role: "hiring_manager"}, {role: "admin", only: [:destroy]}]
 
     before_action :set_role, only: [:index]
     before_action :set_application, only: [:show, :transition, :dismiss_bot_flag, :destroy, :transfer]
@@ -12,8 +12,8 @@ module Admin
     # GET /admin/roles/:role_id/applications
     def index
       @applications = @role.applications
-                           .includes(:candidate, :current_interview_phase)
-                           .order(created_at: :desc)
+        .includes(:candidate, :current_interview_phase)
+        .order(created_at: :desc)
 
       if params[:status].present?
         @applications = @applications.by_status(params[:status])

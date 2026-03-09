@@ -3,8 +3,8 @@
 class CreateInterviewParticipants < ActiveRecord::Migration[8.1]
   def change
     create_table :interview_participants, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
-      t.references :interview, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
-      t.references :user, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
+      t.references :interview, type: :uuid, null: false, foreign_key: {on_delete: :cascade}
+      t.references :user, type: :uuid, null: false, foreign_key: {on_delete: :cascade}
 
       t.timestamps
     end

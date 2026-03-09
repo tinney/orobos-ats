@@ -261,7 +261,7 @@ class InterviewPhaseDataPreservationTest < ActiveSupport::TestCase
     )
 
     # Version the phase (archives old, creates new)
-    new_phase = phase.update_with_versioning(name: "Updated Phone Screen")
+    phase.update_with_versioning(name: "Updated Phone Screen")
 
     # Original interview still exists and points to the archived phase
     interview.reload
@@ -301,7 +301,7 @@ class InterviewPhaseDataPreservationTest < ActiveSupport::TestCase
     )
 
     # Version the phase
-    new_phase = phase.update_with_versioning(name: "Updated Phone Screen")
+    phase.update_with_versioning(name: "Updated Phone Screen")
 
     # Verify all scorecard data is intact
     scorecard.reload
@@ -331,7 +331,7 @@ class InterviewPhaseDataPreservationTest < ActiveSupport::TestCase
     interview.assign_interviewer!(@interviewer)
 
     # Version the phase
-    new_phase = phase.update_with_versioning(name: "Updated Phone Screen")
+    phase.update_with_versioning(name: "Updated Phone Screen")
 
     # Panel members still intact
     interview.reload
@@ -361,7 +361,7 @@ class InterviewPhaseDataPreservationTest < ActiveSupport::TestCase
     )
 
     # Only version phase1
-    new_phase1 = phase1.update_with_versioning(name: "Updated Phone Screen")
+    phase1.update_with_versioning(name: "Updated Phone Screen")
 
     # Both interviews still exist
     assert Interview.exists?(interview1.id)
@@ -390,7 +390,7 @@ class InterviewPhaseDataPreservationTest < ActiveSupport::TestCase
     )
 
     # Version the phase
-    new_phase = phase.update_with_versioning(name: "Updated Technical")
+    phase.update_with_versioning(name: "Updated Technical")
 
     # Application still references the old (now archived) phase
     @application.reload

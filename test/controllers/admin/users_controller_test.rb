@@ -127,7 +127,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_users_path, params: {
-      user: { email: "", first_name: "", last_name: "", role: "interviewer" }
+      user: {email: "", first_name: "", last_name: "", role: "interviewer"}
     }
 
     assert_response :unprocessable_entity
@@ -138,7 +138,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_users_path, params: {
-      user: { email: "admin@testcorp.com", first_name: "Dup", last_name: "User", role: "interviewer" }
+      user: {email: "admin@testcorp.com", first_name: "Dup", last_name: "User", role: "interviewer"}
     }
 
     assert_response :unprocessable_entity
@@ -159,7 +159,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_user_path(@interviewer), params: {
-      user: { first_name: "Updated", last_name: "Name" }
+      user: {first_name: "Updated", last_name: "Name"}
     }
 
     assert_redirected_to admin_users_path
@@ -172,7 +172,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_user_path(@interviewer), params: {
-      user: { first_name: "Ivan", last_name: "Viewer", role: "admin" }
+      user: {first_name: "Ivan", last_name: "Viewer", role: "admin"}
     }
 
     # Role should not change — role is not in user_update_params
@@ -184,7 +184,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_user_path(@interviewer), params: {
-      user: { email: "" }
+      user: {email: ""}
     }
 
     assert_response :unprocessable_entity
@@ -221,7 +221,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     # Create another admin to promote (can't promote self)
     other_admin = ActsAsTenant.with_tenant(@company) do
       User.create!(company: @company, email: "other-admin@testcorp.com",
-                    first_name: "Other", last_name: "Admin", role: "admin")
+        first_name: "Other", last_name: "Admin", role: "admin")
     end
 
     patch promote_admin_user_path(other_admin)
@@ -345,7 +345,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
 
     other_admin = ActsAsTenant.with_tenant(@company) do
       User.create!(company: @company, email: "admin2@testcorp.com",
-                    first_name: "Bob", last_name: "Admin", role: "admin")
+        first_name: "Bob", last_name: "Admin", role: "admin")
     end
 
     patch demote_admin_user_path(other_admin)
@@ -360,7 +360,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
 
     other_admin = ActsAsTenant.with_tenant(@company) do
       User.create!(company: @company, email: "admin2@testcorp.com",
-                    first_name: "Bob", last_name: "Admin", role: "admin")
+        first_name: "Bob", last_name: "Admin", role: "admin")
     end
 
     patch deactivate_admin_user_path(other_admin)
@@ -375,7 +375,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
 
     other_admin = ActsAsTenant.with_tenant(@company) do
       User.create!(company: @company, email: "admin2@testcorp.com",
-                    first_name: "Bob", last_name: "Admin", role: "admin")
+        first_name: "Bob", last_name: "Admin", role: "admin")
     end
 
     # Deactivate other admin — now @admin is sole
@@ -394,7 +394,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     # Start with two admins
     admin2 = ActsAsTenant.with_tenant(@company) do
       User.create!(company: @company, email: "admin2@testcorp.com",
-                    first_name: "Carol", last_name: "Admin", role: "admin")
+        first_name: "Carol", last_name: "Admin", role: "admin")
     end
 
     sign_in(admin2)
@@ -492,13 +492,13 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     get new_admin_user_path
     assert_redirected_to tenant_root_path
 
-    post admin_users_path, params: { user: { email: "x@x.com", first_name: "X", last_name: "Y", role: "interviewer" } }
+    post admin_users_path, params: {user: {email: "x@x.com", first_name: "X", last_name: "Y", role: "interviewer"}}
     assert_redirected_to tenant_root_path
 
     get edit_admin_user_path(@hiring_manager)
     assert_redirected_to tenant_root_path
 
-    patch admin_user_path(@hiring_manager), params: { user: { first_name: "Hacked" } }
+    patch admin_user_path(@hiring_manager), params: {user: {first_name: "Hacked"}}
     assert_redirected_to tenant_root_path
 
     patch promote_admin_user_path(@hiring_manager)

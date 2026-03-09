@@ -9,21 +9,21 @@ class Tenant < ApplicationRecord
 
   validates :company_name, presence: true
   validates :admin_email, presence: true,
-                          format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" },
-                          uniqueness: { case_sensitive: false }
+    format: {with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address"},
+    uniqueness: {case_sensitive: false}
   validates :subdomain, presence: true,
-                        uniqueness: { case_sensitive: false },
-                        length: { minimum: 2, maximum: 63 },
-                        format: {
-                          with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?\z/,
-                          message: "must be lowercase alphanumeric with hyphens (cannot start or end with a hyphen)"
-                        }
+    uniqueness: {case_sensitive: false},
+    length: {minimum: 2, maximum: 63},
+    format: {
+      with: /\A[a-z0-9]([a-z0-9-]*[a-z0-9])?\z/,
+      message: "must be lowercase alphanumeric with hyphens (cannot start or end with a hyphen)"
+    }
   validates :slug, presence: true,
-                   uniqueness: { case_sensitive: false },
-                   format: {
-                     with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?\z/,
-                     message: "must be lowercase alphanumeric with hyphens"
-                   }
+    uniqueness: {case_sensitive: false},
+    format: {
+      with: /\A[a-z0-9]([a-z0-9-]*[a-z0-9])?\z/,
+      message: "must be lowercase alphanumeric with hyphens"
+    }
   validate :subdomain_not_reserved
 
   before_validation :normalize_subdomain

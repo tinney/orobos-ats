@@ -10,9 +10,9 @@ class Interview < ApplicationRecord
   # cancelled   -> unscheduled (reopen)
   VALID_TRANSITIONS = {
     "unscheduled" => %w[scheduled cancelled],
-    "scheduled"   => %w[complete cancelled unscheduled],
-    "complete"    => [],
-    "cancelled"   => %w[unscheduled]
+    "scheduled" => %w[complete cancelled unscheduled],
+    "complete" => [],
+    "cancelled" => %w[unscheduled]
   }.freeze
 
   belongs_to :company
@@ -24,13 +24,13 @@ class Interview < ApplicationRecord
   has_many :panel_members, through: :panel_interviews, source: :user
   has_many :scorecards, dependent: :destroy
 
-  validates :status, presence: true, inclusion: { in: STATUSES }
+  validates :status, presence: true, inclusion: {in: STATUSES}
   validates :application_id, uniqueness: {
     scope: :interview_phase_id,
     message: "already has an interview for this phase"
   }
   validates :scheduled_at, presence: true, if: -> { status == "scheduled" }
-  validates :duration_minutes, numericality: { greater_than: 0, allow_nil: true }
+  validates :duration_minutes, numericality: {greater_than: 0, allow_nil: true}
   validate :validate_status_transition, if: :status_changed?
 
   scope :scheduled, -> { where(status: "scheduled") }
@@ -68,12 +68,29 @@ class Interview < ApplicationRecord
     )
   }
 
-  def scheduled?; status == "scheduled"; end
-  def unscheduled?; status == "unscheduled"; end
-  def complete?; status == "complete"; end
-  def cancelled?; status == "cancelled"; end
-  def terminal?; complete?; end
-  def active?; unscheduled? || scheduled?; end
+  def scheduled?
+    status == "scheduled"
+  end
+
+  def unscheduled?
+    status == "unscheduled"
+  end
+
+  def complete?
+    status == "complete"
+  end
+
+  def cancelled?
+    status == "cancelled"
+  end
+
+  def terminal?
+    complete?
+  end
+
+  def active?
+    unscheduled? || scheduled?
+  end
 
   def can_transition_to?(new_status)
     VALID_TRANSITIONS.fetch(status, []).include?(new_status.to_s)
@@ -90,7 +107,7 @@ class Interview < ApplicationRecord
   def schedule!(time, duration: nil, location: nil)
     raise InvalidTransitionError, "Cannot schedule from '#{status}'" unless can_transition_to?("scheduled")
 
-    attrs = { scheduled_at: time, status: "scheduled" }
+    attrs = {scheduled_at: time, status: "scheduled"}
     attrs[:duration_minutes] = duration if duration
     attrs[:location] = location if location
     update!(attrs)

@@ -50,7 +50,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
   test "unauthenticated user cannot create interview phase" do
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "New Phase" }
+      interview_phase: {name: "New Phase"}
     }
     assert_response :redirect
   end
@@ -58,7 +58,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
   test "interviewer cannot create interview phase" do
     sign_in(@interviewer)
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "New Phase" }
+      interview_phase: {name: "New Phase"}
     }
     assert_redirected_to tenant_root_path
   end
@@ -68,7 +68,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference -> { ActsAsTenant.with_tenant(@company) { @role.interview_phases.count } }, 1 do
       post admin_role_interview_phases_path(@role), params: {
-        interview_phase: { name: "Culture Fit" }
+        interview_phase: {name: "Culture Fit"}
       }
     end
 
@@ -81,7 +81,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference -> { ActsAsTenant.with_tenant(@company) { @role.interview_phases.count } }, 1 do
       post admin_role_interview_phases_path(@role), params: {
-        interview_phase: { name: "Culture Fit" }
+        interview_phase: {name: "Culture Fit"}
       }
     end
 
@@ -96,7 +96,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     post admin_role_interview_phases_path(@role), params: {
-      interview_phase: { name: "Culture Fit" }
+      interview_phase: {name: "Culture Fit"}
     }
 
     new_phase = ActsAsTenant.with_tenant(@company) { @role.interview_phases.find_by(name: "Culture Fit") }
@@ -108,7 +108,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { ActsAsTenant.with_tenant(@company) { @role.interview_phases.count } } do
       post admin_role_interview_phases_path(@role), params: {
-        interview_phase: { name: "" }
+        interview_phase: {name: ""}
       }
     end
 
@@ -121,7 +121,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { ActsAsTenant.with_tenant(@company) { @role.interview_phases.count } } do
       post admin_role_interview_phases_path(@role), params: {
-        interview_phase: { name: @phases.first.name }
+        interview_phase: {name: @phases.first.name}
       }
     end
 
@@ -138,7 +138,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     phase = @phases.first
     patch admin_role_interview_phase_path(@role, phase), params: {
-      interview_phase: { name: "Initial Screening" }
+      interview_phase: {name: "Initial Screening"}
     }
 
     assert_redirected_to admin_role_path(@role)
@@ -153,7 +153,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     phase = @phases.first
     patch admin_role_interview_phase_path(@role, phase), params: {
-      interview_phase: { name: "" }
+      interview_phase: {name: ""}
     }
 
     assert_redirected_to admin_role_path(@role)
@@ -165,7 +165,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
     phase = @phases.first
 
     patch admin_role_interview_phase_path(@role, phase), params: {
-      interview_phase: { name: "Hacked" }
+      interview_phase: {name: "Hacked"}
     }
 
     assert_redirected_to tenant_root_path
@@ -220,7 +220,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     # Move first phase to position 2
     phase = @phases.first
-    patch move_admin_role_interview_phase_path(@role, phase), params: { position: 2 }
+    patch move_admin_role_interview_phase_path(@role, phase), params: {position: 2}
 
     assert_redirected_to admin_role_path(@role)
     assert_match "moved", flash[:notice]
@@ -236,7 +236,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     phase = @phases.first
-    patch move_admin_role_interview_phase_path(@role, phase), params: { position: 0 }
+    patch move_admin_role_interview_phase_path(@role, phase), params: {position: 0}
 
     assert_redirected_to admin_role_path(@role)
 
@@ -248,7 +248,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@interviewer)
 
     phase = @phases.first
-    patch move_admin_role_interview_phase_path(@role, phase), params: { position: 2 }
+    patch move_admin_role_interview_phase_path(@role, phase), params: {position: 2}
 
     assert_redirected_to tenant_root_path
   end
@@ -267,7 +267,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
 
     # Attempt to create phase on another tenant's role
     post admin_role_interview_phases_path(other_role), params: {
-      interview_phase: { name: "Sneaky Phase" }
+      interview_phase: {name: "Sneaky Phase"}
     }
     assert_response :not_found
   end
@@ -284,7 +284,7 @@ class Admin::InterviewPhasesControllerTest < ActionDispatch::IntegrationTest
     sign_in(@admin)
 
     patch admin_role_interview_phase_path(other_role, other_phase), params: {
-      interview_phase: { name: "Hacked" }
+      interview_phase: {name: "Hacked"}
     }
     assert_response :not_found
   end

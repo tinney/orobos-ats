@@ -6,16 +6,27 @@ class Offer < ApplicationRecord
   has_many :offer_revisions, dependent: :destroy
 
   STATUSES = %w[pending accepted declined revoked].freeze
-  validates :status, presence: true, inclusion: { in: STATUSES }
-  validates :salary, numericality: { greater_than: 0 }, allow_nil: true
-  validates :revision, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :status, presence: true, inclusion: {in: STATUSES}
+  validates :salary, numericality: {greater_than: 0}, allow_nil: true
+  validates :revision, presence: true, numericality: {only_integer: true, greater_than_or_equal_to: 1}
 
   before_update :save_revision_history
 
-  def pending?; status == "pending"; end
-  def accepted?; status == "accepted"; end
-  def declined?; status == "declined"; end
-  def revoked?; status == "revoked"; end
+  def pending?
+    status == "pending"
+  end
+
+  def accepted?
+    status == "accepted"
+  end
+
+  def declined?
+    status == "declined"
+  end
+
+  def revoked?
+    status == "revoked"
+  end
 
   private
 

@@ -7,6 +7,7 @@ module Admin
     before_action :require_authentication
 
     include Authorization
+
     require_role :admin
 
     layout "admin"

@@ -5,12 +5,12 @@ class Company < ApplicationRecord
 
   validates :name, presence: true
   validates :subdomain, presence: true,
-                         uniqueness: { case_sensitive: false },
-                         length: { minimum: 3, maximum: 63 },
-                         format: {
-                           with: /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/,
-                           message: "must start and end with a letter or number, and contain only lowercase letters, numbers, and hyphens"
-                         }
+    uniqueness: {case_sensitive: false},
+    length: {minimum: 3, maximum: 63},
+    format: {
+      with: /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/,
+      message: "must start and end with a letter or number, and contain only lowercase letters, numbers, and hyphens"
+    }
 
   RESERVED_SUBDOMAINS = %w[
     www app api admin mail ftp smtp pop imap ns ns1 ns2

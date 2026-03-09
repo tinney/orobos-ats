@@ -6,7 +6,7 @@ module Admin
   # Supports create, update, delete, and reorder operations.
   class InterviewPhasesController < BaseController
     # Override inherited admin requirement — accessible to hiring managers and above
-    self._required_roles = [{ role: "hiring_manager" }]
+    self._required_roles = [{role: "hiring_manager"}]
 
     before_action :set_role
     before_action :set_interview_phase, only: %i[update destroy move]

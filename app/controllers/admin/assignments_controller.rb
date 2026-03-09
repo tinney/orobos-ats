@@ -3,7 +3,7 @@
 module Admin
   class AssignmentsController < BaseController
     # All authenticated users can access, but interviewers see only their own assignments
-    self._required_roles = [{ role: "interviewer" }]
+    self._required_roles = [{role: "interviewer"}]
 
     # GET /admin/assignments
     def index
@@ -46,13 +46,13 @@ module Admin
       return scope unless params[:status].present?
       return scope unless Interview::STATUSES.include?(params[:status])
 
-      scope.where(interviews: { status: params[:status] })
+      scope.where(interviews: {status: params[:status]})
     end
 
     def filter_by_role(scope)
       return scope unless params[:role_id].present?
 
-      scope.joins(application: :role).where(applications: { role_id: params[:role_id] })
+      scope.joins(application: :role).where(applications: {role_id: params[:role_id]})
     end
 
     def filter_by_interviewer(scope)

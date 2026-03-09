@@ -21,9 +21,9 @@ class InterviewPhase < ApplicationRecord
   validates :name, presence: true
   validate :name_unique_among_active_phases, unless: :archived?
   validates :position, presence: true,
-                       numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+    numericality: {only_integer: true, greater_than_or_equal_to: 0}
   validates :phase_version, presence: true,
-                            numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+    numericality: {only_integer: true, greater_than_or_equal_to: 1}
 
   scope :ordered, -> { order(position: :asc) }
   scope :active, -> { where(archived_at: nil) }

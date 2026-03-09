@@ -6,7 +6,7 @@ module Admin
   # Supports CRUD and status transitions for roles.
   class RolesController < BaseController
     # Override inherited admin requirement — roles are accessible to hiring managers and above
-    self._required_roles = [{ role: "hiring_manager" }]
+    self._required_roles = [{role: "hiring_manager"}]
 
     before_action :set_role, only: %i[show edit update transition generate_preview_token revoke_preview_token]
 

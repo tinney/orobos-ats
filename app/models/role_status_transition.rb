@@ -5,8 +5,8 @@ class RoleStatusTransition < ApplicationRecord
   belongs_to :role
   belongs_to :user, optional: true
 
-  validates :from_status, presence: true, inclusion: { in: Role::STATUSES }
-  validates :to_status, presence: true, inclusion: { in: Role::STATUSES }
+  validates :from_status, presence: true, inclusion: {in: Role::STATUSES}
+  validates :to_status, presence: true, inclusion: {in: Role::STATUSES}
   validate :statuses_differ
 
   scope :chronological, -> { order(created_at: :asc) }

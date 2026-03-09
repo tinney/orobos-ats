@@ -201,7 +201,7 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
   test "show does not render additional questions section when no custom questions" do
     get job_application_path(slug: @published_role.slug)
     assert_response :success
-    assert_select "h2", { text: /Additional Questions/, count: 0 }
+    assert_select "h2", {text: /Additional Questions/, count: 0}
   end
 
   test "show renders custom questions when present" do
@@ -618,21 +618,21 @@ class ApplicationsControllerTest < ActionDispatch::IntegrationTest
 
   test "create returns not found for draft role" do
     post job_application_path(slug: @draft_role.slug), params: {
-      application: { first_name: "Jane", last_name: "Doe", email: "jane@example.com" }
+      application: {first_name: "Jane", last_name: "Doe", email: "jane@example.com"}
     }
     assert_response :not_found
   end
 
   test "create returns not found for closed role" do
     post job_application_path(slug: @closed_role.slug), params: {
-      application: { first_name: "Jane", last_name: "Doe", email: "jane@example.com" }
+      application: {first_name: "Jane", last_name: "Doe", email: "jane@example.com"}
     }
     assert_response :not_found
   end
 
   test "create returns not found for internal_only role" do
     post job_application_path(slug: @internal_role.slug), params: {
-      application: { first_name: "Jane", last_name: "Doe", email: "jane@example.com" }
+      application: {first_name: "Jane", last_name: "Doe", email: "jane@example.com"}
     }
     assert_response :not_found
   end

@@ -52,8 +52,8 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
 
     # Transfer markers (lightweight record in source role)
     create_table :transfer_markers, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
-      t.references :source_role, type: :uuid, null: false, foreign_key: { to_table: :roles }
-      t.references :target_role, type: :uuid, null: false, foreign_key: { to_table: :roles }
+      t.references :source_role, type: :uuid, null: false, foreign_key: {to_table: :roles}
+      t.references :target_role, type: :uuid, null: false, foreign_key: {to_table: :roles}
       t.references :candidate, type: :uuid, null: false, foreign_key: true
       t.references :company, type: :uuid, null: false, foreign_key: true
       t.uuid :target_application_id
@@ -69,7 +69,7 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
 
     # Scorecards
     create_table :scorecards, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
-      t.references :interview, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
+      t.references :interview, type: :uuid, null: false, foreign_key: {on_delete: :cascade}
       t.references :user, type: :uuid, null: false, foreign_key: true
       t.references :company, type: :uuid, null: false, foreign_key: true
       t.text :notes
@@ -80,7 +80,7 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
 
     # Scorecard categories (named ratings 1-5)
     create_table :scorecard_categories, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
-      t.references :scorecard, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
+      t.references :scorecard, type: :uuid, null: false, foreign_key: {on_delete: :cascade}
       t.string :name, null: false
       t.integer :rating, null: false
       t.timestamps
@@ -91,7 +91,7 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
     create_table :offers, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
       t.uuid :offer_application_id, null: false
       t.references :company, type: :uuid, null: false, foreign_key: true
-      t.references :created_by, type: :uuid, null: false, foreign_key: { to_table: :users }
+      t.references :created_by, type: :uuid, null: false, foreign_key: {to_table: :users}
       t.decimal :salary, precision: 12, scale: 2
       t.string :salary_currency, default: "USD"
       t.date :start_date
@@ -105,14 +105,14 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
 
     # Offer revisions (history)
     create_table :offer_revisions, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
-      t.references :offer, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
+      t.references :offer, type: :uuid, null: false, foreign_key: {on_delete: :cascade}
       t.decimal :salary, precision: 12, scale: 2
       t.string :salary_currency
       t.date :start_date
       t.string :status
       t.text :notes
       t.integer :revision_number, null: false
-      t.references :changed_by, type: :uuid, null: true, foreign_key: { to_table: :users }
+      t.references :changed_by, type: :uuid, null: true, foreign_key: {to_table: :users}
       t.timestamps
     end
 
@@ -126,7 +126,7 @@ class AddComprehensiveFeatures < ActiveRecord::Migration[8.1]
     end
 
     # Add hiring_manager_id to roles
-    add_reference :roles, :hiring_manager, type: :uuid, foreign_key: { to_table: :users }, null: true
+    add_reference :roles, :hiring_manager, type: :uuid, foreign_key: {to_table: :users}, null: true
 
     # Add description to companies
     add_column :companies, :description, :text

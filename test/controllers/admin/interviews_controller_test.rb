@@ -93,7 +93,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
 
   test "interviewer role cannot assign interviewers" do
     sign_in @interviewer_user
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     assert_redirected_to tenant_root_path
     ActsAsTenant.with_tenant(@company) do
@@ -102,7 +102,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "unauthenticated user cannot assign interviewers" do
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     # Unauthenticated redirects to root domain
     assert_response :redirect
@@ -118,7 +118,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "assigning interviewer creates unscheduled interview event" do
     sign_in @admin
 
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     assert_response :redirect
     assert flash[:notice].present?
@@ -141,7 +141,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
 
     # First assignment creates the interview
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     ActsAsTenant.with_tenant(@company) do
       assert_equal 1, Interview.count
@@ -158,7 +158,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
       )
     end
 
-    post assign_path, params: { user_id: second_interviewer.id }
+    post assign_path, params: {user_id: second_interviewer.id}
 
     ActsAsTenant.with_tenant(@company) do
       # Still only 1 interview, but 2 participants
@@ -170,8 +170,8 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "assigning same interviewer twice shows alert" do
     sign_in @admin
 
-    post assign_path, params: { user_id: @interviewer_user.id }
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     assert flash[:alert].present?
 
@@ -184,7 +184,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "hiring manager can assign interviewers" do
     sign_in @hiring_manager
 
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     assert_response :redirect
     assert flash[:notice].present?
@@ -197,7 +197,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "interview is created with correct company (tenant)" do
     sign_in @admin
 
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     ActsAsTenant.with_tenant(@company) do
       interview = Interview.last
@@ -211,13 +211,13 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     second_phase = ActsAsTenant.with_tenant(@company) { @role.interview_phases.ordered.second }
 
     # Assign to first phase
-    post assign_path, params: { user_id: @interviewer_user.id }
+    post assign_path, params: {user_id: @interviewer_user.id}
 
     # Assign to second phase
     post assign_admin_application_interview_phase_interview_path(
       application_id: @application.id,
       interview_phase_id: second_phase.id
-    ), params: { user_id: @interviewer_user.id }
+    ), params: {user_id: @interviewer_user.id}
 
     ActsAsTenant.with_tenant(@company) do
       assert_equal 2, Interview.count
@@ -242,7 +242,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
       @interview.assign_interviewer!(@interviewer_user)
     end
 
-    delete remove_path, params: { user_id: @interviewer_user.id }
+    delete remove_path, params: {user_id: @interviewer_user.id}
 
     assert_response :redirect
     assert flash[:notice].present?
@@ -261,7 +261,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in @interviewer_user
 
     scheduled_time = 2.days.from_now.change(usec: 0)
-    patch schedule_path, params: { scheduled_at: scheduled_time.iso8601 }
+    patch schedule_path, params: {scheduled_at: scheduled_time.iso8601}
 
     assert_response :redirect
     assert_equal "Interview time slot has been updated.", flash[:notice]
@@ -282,7 +282,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in @interviewer_user
 
     new_time = 5.days.from_now.change(usec: 0)
-    patch schedule_path, params: { scheduled_at: new_time.iso8601 }
+    patch schedule_path, params: {scheduled_at: new_time.iso8601}
 
     assert_response :redirect
     assert_equal "Interview time slot has been updated.", flash[:notice]
@@ -309,7 +309,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
 
     sign_in non_panel_user
 
-    patch schedule_path, params: { scheduled_at: 2.days.from_now.iso8601 }
+    patch schedule_path, params: {scheduled_at: 2.days.from_now.iso8601}
 
     assert_response :redirect
     assert_equal "Only assigned interviewers can modify this interview.", flash[:alert]
@@ -325,7 +325,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
 
     scheduled_time = 3.days.from_now.change(usec: 0)
-    patch schedule_path, params: { scheduled_at: scheduled_time.iso8601 }
+    patch schedule_path, params: {scheduled_at: scheduled_time.iso8601}
 
     assert_response :redirect
     assert_equal "Interview time slot has been updated.", flash[:notice]
@@ -341,7 +341,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in @hiring_manager
 
     scheduled_time = 3.days.from_now.change(usec: 0)
-    patch schedule_path, params: { scheduled_at: scheduled_time.iso8601 }
+    patch schedule_path, params: {scheduled_at: scheduled_time.iso8601}
 
     assert_response :redirect
     assert_equal "Interview time slot has been updated.", flash[:notice]
@@ -355,7 +355,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "unauthenticated user cannot schedule" do
     create_interview_with_participant!(@interviewer_user)
 
-    patch schedule_path, params: { scheduled_at: 2.days.from_now.iso8601 }
+    patch schedule_path, params: {scheduled_at: 2.days.from_now.iso8601}
 
     assert_response :redirect
     ActsAsTenant.with_tenant(@company) do
@@ -368,7 +368,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     create_interview_with_participant!(@interviewer_user)
     sign_in @interviewer_user
 
-    patch schedule_path, params: { scheduled_at: "" }
+    patch schedule_path, params: {scheduled_at: ""}
 
     assert_response :redirect
     assert_equal "Please provide a date and time for the interview.", flash[:alert]
@@ -397,7 +397,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
     sign_in second_interviewer
 
     scheduled_time = 4.days.from_now.change(usec: 0)
-    patch schedule_path, params: { scheduled_at: scheduled_time.iso8601 }
+    patch schedule_path, params: {scheduled_at: scheduled_time.iso8601}
 
     assert_response :redirect
     assert_equal "Interview time slot has been updated.", flash[:notice]
@@ -416,7 +416,7 @@ class Admin::InterviewsControllerTest < ActionDispatch::IntegrationTest
   test "cannot access applications from another tenant" do
     other_company = Company.create!(name: "Other Corp", subdomain: "othercorp")
     ActsAsTenant.with_tenant(other_company) do
-      other_admin = User.create!(
+      User.create!(
         company: other_company,
         email: "admin@othercorp.com",
         first_name: "Other",

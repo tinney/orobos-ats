@@ -2,12 +2,12 @@
 
 module Admin
   class MyInterviewsController < BaseController
-    self._required_roles = [{ role: "interviewer" }]
+    self._required_roles = [{role: "interviewer"}]
 
     # GET /admin/my_interviews
     def index
       @interviews = Interview.for_user(current_user)
-                             .includes(:scorecards)
+        .includes(:scorecards)
 
       # Group interviews by role for tabular display
       @interviews_by_role = @interviews.group_by { |i| i.application.role }

@@ -84,9 +84,9 @@ module RateLimiting
         else
           flash.now[:alert] = config[:alert]
           render file: Rails.root.join("public", "429.html"),
-                 layout: false,
-                 status: :too_many_requests,
-                 content_type: "text/html"
+            layout: false,
+            status: :too_many_requests,
+            content_type: "text/html"
         end
       end
 

@@ -2,7 +2,7 @@
 
 module Admin
   class CustomQuestionsController < BaseController
-    self._required_roles = [{ role: "hiring_manager" }]
+    self._required_roles = [{role: "hiring_manager"}]
 
     before_action :set_role
     before_action :set_question, only: [:update, :destroy]

@@ -4,6 +4,7 @@ require "test_helper"
 
 class ApplicationSubmissionServiceTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
+
   setup do
     @company = Company.create!(name: "Test Co", subdomain: "testco")
     ActsAsTenant.current_tenant = @company
