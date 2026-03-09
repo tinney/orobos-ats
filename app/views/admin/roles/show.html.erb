@@ -17,7 +17,15 @@
     <div class="flex items-center space-x-3">
       <%= link_to "Edit", edit_admin_role_path(@role), class: "inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50" %>
       <% if current_user_role_at_least?(:admin) %>
-        <%= button_to admin_role_path(@role), method: :delete, class: "inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700", data: { confirm: "Are you sure you want to delete \"#{@role.title}\"? This will permanently remove the role and all associated data." } do %>
+        <%= button_to admin_role_path(@role), method: :delete,
+            class: "inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700",
+            form: {
+              data: {
+                controller: "confirm",
+                confirm_message_value: "Are you sure you want to delete \"#{@role.title}\"? This will permanently remove the role and all associated data.",
+                action: "submit->confirm#submit"
+              }
+            } do %>
           Delete
         <% end %>
       <% end %>
@@ -190,7 +198,7 @@
                 </button>
 
                 <%# Delete button %>
-                <%= button_to admin_role_interview_phase_path(@role, phase), method: :delete, class: "p-1 text-gray-400 hover:text-red-600", title: "Remove phase", data: { confirm: "Remove \"#{phase.name}\"? This cannot be undone." }, form: { class: "inline" } do %>
+                <%= button_to admin_role_interview_phase_path(@role, phase), method: :delete, class: "p-1 text-gray-400 hover:text-red-600", title: "Remove phase", form: { class: "inline", data: { controller: "confirm", confirm_message_value: "Remove \"#{phase.name}\"? This cannot be undone.", action: "submit->confirm#submit" } } do %>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
@@ -248,7 +256,13 @@
             <div class="flex items-center gap-2">
               <%= button_to admin_role_custom_question_path(@role, question), method: :delete,
                   class: "text-xs text-red-600 hover:text-red-800 bg-transparent border-0 cursor-pointer",
-                  data: { confirm: "Remove this question?" } do %>
+                  form: {
+                    data: {
+                      controller: "confirm",
+                      confirm_message_value: "Remove this question?",
+                      action: "submit->confirm#submit"
+                    }
+                  } do %>
                 Remove
               <% end %>
             </div>
@@ -284,7 +298,15 @@
       <% if @role.preview_token.present? %>
         <div class="flex items-center space-x-3">
           <input type="text" readonly value="<%= role_preview_url(@role, token: @role.preview_token) %>" class="flex-1 text-sm border-gray-300 rounded-md bg-gray-50 text-gray-700 select-all">
-          <%= button_to revoke_preview_token_admin_role_path(@role), method: :delete, class: "inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100", data: { confirm: "Revoke preview link? Existing links will stop working." } do %>
+          <%= button_to revoke_preview_token_admin_role_path(@role), method: :delete,
+              class: "inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100",
+              form: {
+                data: {
+                  controller: "confirm",
+                  confirm_message_value: "Revoke preview link? Existing links will stop working.",
+                  action: "submit->confirm#submit"
+                }
+              } do %>
             Revoke
           <% end %>
         </div>
