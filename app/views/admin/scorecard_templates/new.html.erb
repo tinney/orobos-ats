@@ -1,8 +1,9 @@
 <div class="max-w-3xl">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">New Scorecard Template</h1>
+    <%= link_to "← Back to Templates", admin_scorecard_templates_path, class: "text-sm text-indigo-600 hover:text-indigo-800" %>
+    <h1 class="text-2xl font-bold text-gray-900 mt-2">New Scorecard Template</h1>
     <p class="mt-1 text-sm text-gray-500">
-      Creating template for <strong><%= @interview_phase.name %></strong> phase of <strong><%= @role.title %></strong>
+      Define rating categories that interviewers will use when evaluating candidates.
     </p>
   </div>
 
