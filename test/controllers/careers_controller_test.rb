@@ -285,6 +285,25 @@ class CareersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "San Francisco, CA"
   end
 
+  test "index header links to careers index" do
+    get careers_path
+    assert_response :success
+    assert_select "header a[href='#{careers_path}']"
+  end
+
+  test "index shows company description when present" do
+    @company.update!(description: "We build great software")
+    get careers_path
+    assert_response :success
+    assert_includes response.body, "We build great software"
+  end
+
+  test "index connects careers Stimulus controller" do
+    get careers_path
+    assert_response :success
+    assert_select "[data-controller='careers']"
+  end
+
   test "index uses default primary color when none set" do
     @company.update_column(:primary_color, nil)
     get careers_path
