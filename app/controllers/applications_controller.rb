@@ -38,10 +38,9 @@ class ApplicationsController < ApplicationController
 
   private
 
+  # Raises ActiveRecord::RecordNotFound (404) for roles not in published state.
   def set_role
     @role = Role.publicly_visible.find_by!(slug: params[:slug])
-  rescue ActiveRecord::RecordNotFound
-    render plain: "Not Found", status: :not_found
   end
 
   def application_params

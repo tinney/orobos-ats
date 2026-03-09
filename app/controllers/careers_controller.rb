@@ -15,9 +15,8 @@ class CareersController < ApplicationController
   end
 
   # GET /careers/:id
+  # Returns 404 for roles that are not published (draft, internal_only, closed).
   def show
-    @role = Role.publicly_visible.find_by(id: params[:id])
-
-    render plain: "Not Found", status: :not_found and return if @role.nil?
+    @role = Role.publicly_visible.find(params[:id])
   end
 end

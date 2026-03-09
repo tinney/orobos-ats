@@ -7,11 +7,8 @@ class JobsController < ApplicationController
   layout "careers"
 
   # GET /jobs/:slug
+  # Returns 404 for roles that are not published (draft, internal_only, closed).
   def show
-    @role = Role.publicly_visible.find_by(slug: params[:slug])
-
-    if @role.nil?
-      render plain: "Not Found", status: :not_found
-    end
+    @role = Role.publicly_visible.find_by!(slug: params[:slug])
   end
 end
