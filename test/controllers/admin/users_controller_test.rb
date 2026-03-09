@@ -434,7 +434,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     # Promote button appears for interviewer and hiring_manager
     assert_match "Promote", response.body
-    # Demote button appears for hiring_manager
+    # Demote button appears for hiring_manager and admin (other admins)
     assert_match "Demote", response.body
   end
 
@@ -443,6 +443,107 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     get admin_users_path
     assert_response :success
     assert_select "form[data-controller='confirm']", minimum: 1
+  end
+
+  test "index uses role-change stimulus controller for promote and demote" do
+    sign_in(@admin)
+    get admin_users_path
+    assert_response :success
+    # The page wraps active users in a role-change controller scope
+    assert_select "div[data-controller='role-change']", minimum: 1
+    # Promote buttons use data-action to trigger modal
+    assert_select "button[data-action='click->role-change#showModal']", minimum: 1
+    # Confirmation modal exists with required targets
+    assert_select "[data-role-change-target='modal']", count: 1
+    assert_select "[data-role-change-target='modalTitle']", count: 1
+    assert_select "[data-role-change-target='modalBody']", count: 1
+    assert_select "[data-role-change-target='modalConfirmBtn']", count: 1
+    assert_select "[data-role-change-target='hiddenForm']", count: 1
+  end
+
+  test "promote button shows correct target role for interviewer" do
+    sign_in(@admin)
+    get admin_users_path
+    assert_response :success
+    # Interviewer should have a promote button targeting "Hiring Manager"
+    assert_select "button[data-role-change-target-role-param='Hiring Manager']", minimum: 1
+  end
+
+  test "demote button shows correct target role for hiring manager" do
+    sign_in(@admin)
+    get admin_users_path
+    assert_response :success
+    # Hiring manager should have a demote button targeting "Interviewer"
+    assert_select "button[data-role-change-target-role-param='Interviewer']", minimum: 1
+  end
+
+  test "no promote button for admin users" do
+    sign_in(@admin)
+
+    # Create another admin so we can see them in the list
+    ActsAsTenant.with_tenant(@company) do
+      User.create!(company: @company, email: "admin2@testcorp.com",
+        first_name: "Bob", last_name: "Admin", role: "admin")
+    end
+
+    get admin_users_path
+    assert_response :success
+    # Admin users should NOT have a promote button but SHOULD have a demote button
+    assert_select "button[data-role-change-action-param='demote']", minimum: 1
+  end
+
+  test "no demote button for interviewer users" do
+    sign_in(@admin)
+    get admin_users_path
+    assert_response :success
+    # Interviewer has promote but no demote
+    assert_select "button[data-role-change-action-param='promote'][data-role-change-name-param='Ivan Viewer']", count: 1
+  end
+
+  test "flash alert displays error with dismiss button for disallowed promote" do
+    sign_in(@admin)
+
+    # Try to promote an already-admin user
+    other_admin = ActsAsTenant.with_tenant(@company) do
+      User.create!(company: @company, email: "admin2@testcorp.com",
+        first_name: "Bob", last_name: "Admin", role: "admin")
+    end
+
+    patch promote_admin_user_path(other_admin)
+    follow_redirect!
+
+    assert_response :success
+    # Error flash is shown with dismiss button
+    assert_select "div.bg-red-50" do
+      assert_select "p", text: /cannot be promoted/
+      assert_select "button[data-action='click->flash-dismiss#dismiss']"
+    end
+  end
+
+  test "flash alert displays error for self-modification attempt" do
+    sign_in(@admin)
+
+    patch promote_admin_user_path(@admin)
+    follow_redirect!
+
+    assert_response :success
+    assert_select "div.bg-red-50" do
+      assert_select "p", text: /cannot modify your own role/
+      assert_select "button[data-action='click->flash-dismiss#dismiss']"
+    end
+  end
+
+  test "flash notice displays success with dismiss button after promote" do
+    sign_in(@admin)
+
+    patch promote_admin_user_path(@interviewer)
+    follow_redirect!
+
+    assert_response :success
+    assert_select "div.bg-green-50" do
+      assert_select "p", text: /promoted/
+      assert_select "button[data-action='click->flash-dismiss#dismiss']"
+    end
   end
 
   test "new form has role select dropdown" do
